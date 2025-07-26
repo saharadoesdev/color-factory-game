@@ -3,21 +3,21 @@ import random
 from classes.player import Player
 from classes.blob import Blob
 
-MAX_MISSED_FRUITS = 3
-missed_fruits = 0
+MAX_MISSED_BLOBS = 3
+missed_blobs = 0
 game_state = "playing"  # The initial game state
 
 def initialize_game():
     pygame.init()
     window_size = (800, 600)
     window = pygame.display.set_mode(window_size)
-    pygame.display.set_caption('Falling Fruit Game')
+    pygame.display.set_caption('Falling Blob Game')
     return window
 
 def load_assets():
-    # background_image = pygame.image.load('pygame/images/background.png')
-    # background_image = pygame.transform.scale(background_image, (800, 600))
-    background_image = None     # temporary
+    background_image = pygame.image.load('assets/background.jpg')
+    background_image = pygame.transform.scale(background_image, (800, 600))
+    # background_image = None     # temporary
 
     # player_image = pygame.image.load('pygame/images/player_basket.png')
     player_image = pygame.image.load('assets/player_basket.png')
@@ -37,47 +37,47 @@ def load_assets():
 
     return background_image, player_image, [apple_image, banana_image, orange_image]
 
-def spawn_fruit(falling_fruits, fruit_images, screen_width):
+def spawn_blob(falling_blobs, blob_images, screen_width):
     x_position = random.randint(0, screen_width - 50)
     y_position = 0
-    fruit_image = random.choice(fruit_images)
-    # falling_fruits.append([x_position, y_position, fruit_image])
-    falling_fruits.append(Blob(x_position, y_position, fruit_image))
+    blob_image = random.choice(blob_images)
+    # falling_blobs.append([x_position, y_position, blob_image])
+    falling_blobs.append(Blob(x_position, y_position, blob_image))
 
-def move_fruits(falling_fruits, window_height):
+def move_blobs(falling_blobs, window_height):
     """
-    Moves fruits downward and counts missed fruits.
+    Moves blobs downward and counts missed blobs.
 
     Parameters:
-    - falling_fruits: List of fruits currently falling.
-    - fruit_speed: The speed of the falling fruits.
+    - falling_blobs: List of blobs currently falling.
+    - blob_speed: The speed of the falling blobs.
     - window_height: The height of the game window.
 
     Returns:
-    - missed_fruits: The number of fruits that fell off the screen.
+    - missed_blobs: The number of blobs that fell off the screen.
     """
-    missed_fruits = 0
-    for fruit in falling_fruits:
-        # fruit[1] += fruit_speed  # Move the fruit down
-        # if fruit[1] > window_height:  # Check if the fruit is off-screen
-        #     missed_fruits += 1  # Increment the missed fruit counter
-        fruit.move()
-    falling_fruits[:] = [fruit for fruit in falling_fruits if fruit.y <= window_height]  # Remove off-screen fruits
-    return missed_fruits
+    missed_blobs = 0
+    for blob in falling_blobs:
+        # blob[1] += blob_speed  # Move the blob down
+        # if blob[1] > window_height:  # Check if the blob is off-screen
+        #     missed_blobs += 1  # Increment the missed blob counter
+        blob.move()
+    falling_blobs[:] = [blob for blob in falling_blobs if blob.y <= window_height]  # Remove off-screen blobs
+    return missed_blobs
 
-def check_collision(player_position, fruit_position):
+def check_collision(player_position, blob_position):
     basket_x, basket_y = player_position
-    fruit_x, fruit_y = fruit_position
+    blob_x, blob_y = blob_position
 
     basket_width = 100
     basket_height = 100
-    fruit_width = 50
-    fruit_height = 50
+    blob_width = 50
+    blob_height = 50
 
-    if (fruit_x < basket_x + basket_width and
-        fruit_x + fruit_width > basket_x and
-        fruit_y < basket_y + basket_height and
-        fruit_y + fruit_height > basket_y):
+    if (blob_x < basket_x + basket_width and
+        blob_x + blob_width > basket_x and
+        blob_y < basket_y + basket_height and
+        blob_y + blob_height > basket_y):
         return True
     return False
 
@@ -85,7 +85,7 @@ def render_score(window, score, font):
     score_text = font.render(f"Score: {score}", True, (0, 0, 0))
     window.blit(score_text, (10, 10))
 
-def render_game(window, background_image, player_image, player_position, falling_fruits, score, font):
+def render_game(window, background_image, player_image, player_position, falling_blobs, score, font):
     # window.blit(background_image, (0, 0))
      # If there's no background image, fill with a solid color (added this)
     if background_image is None:
@@ -95,9 +95,9 @@ def render_game(window, background_image, player_image, player_position, falling
 
     window.blit(player_image, player_position)
 
-    for fruit in falling_fruits:
-        # window.blit(fruit[2], (fruit[0], fruit[1]))
-        window.blit(fruit.image, (fruit.x, fruit.y))
+    for blob in falling_blobs:
+        # window.blit(blob[2], (blob[0], blob[1]))
+        window.blit(blob.image, (blob.x, blob.y))
 
     render_score(window, score, font)
     pygame.display.flip()
@@ -148,18 +148,18 @@ def handle_events(game_state):
     return True, restart, move_left, move_right
 
 def main():
-    global game_state, missed_fruits    # added these
+    global game_state, missed_blobs    # added these
 
     window = initialize_game()
-    background_image, player_image, fruit_images = load_assets()
+    background_image, player_image, blob_images = load_assets()
 
     # player_position = [350, 500]
     # player_speed = 5
     player = Player(350, 500)
     screen_width = 800
     screen_height = 600
-    falling_fruits = []
-    # fruit_speed = 5
+    falling_blobs = []
+    # blob_speed = 5
     spawn_timer = 0
     score = 0
 
@@ -178,34 +178,34 @@ def main():
         #   player_position[0] = max(0, min(700, player_position[0]))
             player.move(move_left, move_right)
 
-            # Spawn fruits periodically
+            # Spawn blobs periodically
             spawn_timer += 1
             if spawn_timer > 30:
-              spawn_fruit(falling_fruits, fruit_images, screen_width)
+              spawn_blob(falling_blobs, blob_images, screen_width)
               spawn_timer = 0
 
-            # Move fruits and check for game-over condition
-            # missed_fruits += move_fruits(falling_fruits, fruit_speed, screen_height)
-            missed_fruits += move_fruits(falling_fruits, screen_height)
-            if missed_fruits >= MAX_MISSED_FRUITS:
+            # Move blobs and check for game-over condition
+            # missed_blobs += move_blobs(falling_blobs, blob_speed, screen_height)
+            missed_blobs += move_blobs(falling_blobs, screen_height)
+            if missed_blobs >= MAX_MISSED_BLOBS:
                 game_state = "game_over"
 
             # Check for collisions
-            for fruit in falling_fruits[:]:
-                if check_collision([player.x,player.y], [fruit.x, fruit.y]):
-                    falling_fruits.remove(fruit)
+            for blob in falling_blobs[:]:
+                if check_collision([player.x,player.y], [blob.x, blob.y]):
+                    falling_blobs.remove(blob)
                     score += 1
 
             # Render the game
-            render_game(window, background_image, player_image, [player.x,player.y], falling_fruits, score, font)
+            render_game(window, background_image, player_image, [player.x,player.y], falling_blobs, score, font)
 
         elif game_state == "game_over":
             render_game_over(window, font)
 
             # Handle restart
             if restart:
-                falling_fruits = []
-                missed_fruits = 0
+                falling_blobs = []
+                missed_blobs = 0
                 score = 0
                 game_state = "playing"
 
