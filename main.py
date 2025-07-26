@@ -1,5 +1,6 @@
 import pygame
 import random
+from classes.player import Player
 
 MAX_MISSED_FRUITS = 3
 missed_fruits = 0
@@ -148,8 +149,9 @@ def main():
     window = initialize_game()
     background_image, player_image, fruit_images = load_assets()
 
-    player_position = [350, 500]
-    player_speed = 5
+    # player_position = [350, 500]
+    # player_speed = 5
+    player = Player(350, 500)
     screen_width = 800
     screen_height = 600
     falling_fruits = []
@@ -162,46 +164,47 @@ def main():
 
     running = True
     while running:
-      running, restart, move_left, move_right = handle_events(game_state)
+        running, restart, move_left, move_right = handle_events(game_state)
 
-      if game_state == "playing":
+        if game_state == "playing":
           # Update player position
         #   player_position = update_player_position(player_position, move_left, move_right, player_speed, screen_width)
 
-          player_position[0] += (move_right - move_left) * player_speed
-          player_position[0] = max(0, min(700, player_position[0]))
+        #   player_position[0] += (move_right - move_left) * player.speed
+        #   player_position[0] = max(0, min(700, player_position[0]))
+            player.move(move_left, move_right)
 
-          # Spawn fruits periodically
-          spawn_timer += 1
-          if spawn_timer > 30:
+            # Spawn fruits periodically
+            spawn_timer += 1
+            if spawn_timer > 30:
               spawn_fruit(falling_fruits, fruit_images, screen_width)
               spawn_timer = 0
 
-          # Move fruits and check for game-over condition
-          missed_fruits += move_fruits(falling_fruits, fruit_speed, screen_height)
-          if missed_fruits >= MAX_MISSED_FRUITS:
-              game_state = "game_over"
+            # Move fruits and check for game-over condition
+            missed_fruits += move_fruits(falling_fruits, fruit_speed, screen_height)
+            if missed_fruits >= MAX_MISSED_FRUITS:
+                game_state = "game_over"
 
-          # Check for collisions
-          for fruit in falling_fruits[:]:
-              if check_collision(player_position, [fruit[0], fruit[1]]):
-                  falling_fruits.remove(fruit)
-                  score += 1
+            # Check for collisions
+            for fruit in falling_fruits[:]:
+                if check_collision([player.x,player.y], [fruit[0], fruit[1]]):
+                    falling_fruits.remove(fruit)
+                    score += 1
 
-          # Render the game
-          render_game(window, background_image, player_image, player_position, falling_fruits, score, font)
+            # Render the game
+            render_game(window, background_image, player_image, [player.x,player.y], falling_fruits, score, font)
 
-      elif game_state == "game_over":
-          render_game_over(window, font)
+        elif game_state == "game_over":
+            render_game_over(window, font)
 
-          # Handle restart
-          if restart:
-              falling_fruits = []
-              missed_fruits = 0
-              score = 0
-              game_state = "playing"
+            # Handle restart
+            if restart:
+                falling_fruits = []
+                missed_fruits = 0
+                score = 0
+                game_state = "playing"
 
-      clock.tick(60)
+        clock.tick(60)
 
     pygame.quit()
 
