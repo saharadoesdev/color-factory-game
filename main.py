@@ -15,34 +15,30 @@ def initialize_game():
     return window
 
 def load_assets():
-    background_image = pygame.image.load('assets/background.jpg')
-    background_image = pygame.transform.scale(background_image, (800, 600))
-    # background_image = None     # temporary
+    # background_image = pygame.image.load('assets/background.jpg')
+    # background_image = pygame.transform.scale(background_image, (800, 600))
+    background_image = None     # temporary
 
-    # player_image = pygame.image.load('pygame/images/player_basket.png')
     player_image = pygame.image.load('assets/player_basket.png')
     player_image = pygame.transform.scale(player_image, (100, 100))
 
-    # apple_image = pygame.image.load('pygame/images/apple.png')
-    apple_image = pygame.image.load('assets/apple.png')
-    apple_image = pygame.transform.scale(apple_image, (50, 50))
+    red_image = pygame.image.load('assets/apple.png')
+    red_image = pygame.transform.scale(red_image, (50, 50))
 
-    # banana_image = pygame.image.load('pygame/images/banana.png')
-    banana_image = pygame.image.load('assets/banana.png')
-    banana_image = pygame.transform.scale(banana_image, (50, 50))
+    yellow_image = pygame.image.load('assets/banana.png')
+    yellow_image = pygame.transform.scale(yellow_image, (50, 50))
 
-    # orange_image = pygame.image.load('pygame/images/orange.png')
-    orange_image = pygame.image.load('assets/orange.png')
-    orange_image = pygame.transform.scale(orange_image, (50, 50))
+    blue_image = pygame.image.load('assets/orange.png')
+    blue_image = pygame.transform.scale(blue_image, (50, 50))
 
-    return background_image, player_image, [apple_image, banana_image, orange_image]
+    return background_image, player_image, [red_image, yellow_image, blue_image]
 
 def spawn_blob(falling_blobs, blob_images, screen_width):
     x_position = random.randint(0, screen_width - 50)
     y_position = 0
     blob_image = random.choice(blob_images)
     # falling_blobs.append([x_position, y_position, blob_image])
-    falling_blobs.append(Blob(x_position, y_position, blob_image))
+    falling_blobs.append(Blob(x_position, y_position, blob_image, "test"))
 
 def move_blobs(falling_blobs, window_height):
     """
@@ -194,6 +190,7 @@ def main():
             for blob in falling_blobs[:]:
                 if check_collision([player.x,player.y], [blob.x, blob.y]):
                     falling_blobs.remove(blob)
+                    player.update_held_color(blob.color)
                     score += 1
 
             # Render the game
