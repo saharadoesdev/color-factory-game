@@ -7,6 +7,18 @@ MAX_MISSED_BLOBS = 3
 missed_blobs = 0
 game_state = "playing"  # The initial game state
 
+COLORS = {
+    "RED": (255, 0, 0),
+    "YELLOW": (255, 255, 0),
+    "BLUE": (0, 0, 255),
+    # "GREEN": (0, 255, 0),
+    # "PURPLE": (128, 0, 128),
+    # "ORANGE": (255, 165, 0),
+    # "WHITE": (255, 255, 255)
+}
+
+SPAWNABLE_COLORS = ["RED", "BLUE", "YELLOW"]
+
 def initialize_game():
     pygame.init()
     window_size = (800, 600)
@@ -31,14 +43,22 @@ def load_assets():
     blue_image = pygame.image.load('assets/orange.png')
     blue_image = pygame.transform.scale(blue_image, (50, 50))
 
-    return background_image, player_image, [red_image, yellow_image, blue_image]
+    blob_images = {
+        "RED": red_image,
+        "YELLOW": yellow_image,
+        "BLUE": blue_image
+    }
+
+    # return background_image, player_image, [red_image, yellow_image, blue_image]
+    return background_image, player_image, blob_images    
 
 def spawn_blob(falling_blobs, blob_images, screen_width):
     x_position = random.randint(0, screen_width - 50)
     y_position = 0
-    blob_image = random.choice(blob_images)
+    color_to_spawn = random.choice(SPAWNABLE_COLORS)    # Choose blob color randomly
+    # blob_image = random.choice(blob_images)
     # falling_blobs.append([x_position, y_position, blob_image])
-    falling_blobs.append(Blob(x_position, y_position, blob_image, "test"))
+    falling_blobs.append(Blob(x_position, y_position, blob_images[color_to_spawn], color_to_spawn)) # Create and spawn new blob
 
 def move_blobs(falling_blobs, window_height):
     """
@@ -81,7 +101,7 @@ def render_score(window, score, font):
     score_text = font.render(f"Score: {score}", True, (0, 0, 0))
     window.blit(score_text, (10, 10))
 
-def render_game(window, background_image, player_image, player_position, falling_blobs, score, font):
+def render_game(window, background_image, player, player_position, falling_blobs, score, font):
     # window.blit(background_image, (0, 0))
      # If there's no background image, fill with a solid color (added this)
     if background_image is None:
@@ -89,7 +109,16 @@ def render_game(window, background_image, player_image, player_position, falling
     else:
         window.blit(background_image, (0, 0))
 
-    window.blit(player_image, player_position)
+    window.blit(player.image, player_position)
+
+    # Display indicator dot for currently held color
+    if player.held_color is not None:
+        indicator_pos = (player.x, player.y) # calculate indicator dot's position
+    # Look up the RGB tuple from the COLORS dictionary
+        color_to_draw = COLORS[player.held_color]
+    
+    # Use the retrieved tuple to draw the circle
+        pygame.draw.circle(window, color_to_draw, indicator_pos, 15)
 
     for blob in falling_blobs:
         # window.blit(blob[2], (blob[0], blob[1]))
@@ -194,7 +223,7 @@ def main():
                     score += 1
 
             # Render the game
-            render_game(window, background_image, player_image, [player.x,player.y], falling_blobs, score, font)
+            render_game(window, background_image, player, [player.x,player.y], falling_blobs, score, font)
 
         elif game_state == "game_over":
             render_game_over(window, font)
