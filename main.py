@@ -27,9 +27,9 @@ def initialize_game():
     return window
 
 def load_assets():
-    # background_image = pygame.image.load('assets/background.jpg')
-    # background_image = pygame.transform.scale(background_image, (800, 600))
-    background_image = None     # temporary
+    background_image = pygame.image.load('assets/background.jpg')
+    background_image = pygame.transform.scale(background_image, (800, 489))
+    # background_image = None     # temporary
 
     player_image = pygame.image.load('assets/player_basket.png')
     player_image = pygame.transform.scale(player_image, (100, 100))
@@ -109,6 +109,7 @@ def render_game(window, background_image, player, player_position, falling_blobs
     if background_image is None:
         window.fill((135, 206, 235))  # RGB for sky blue
     else:
+        window.fill((0, 43, 34))    # Fill lower area with darkest blue-green from background
         window.blit(background_image, (0, 0))
 
     window.blit(player.image, player_position)
@@ -235,6 +236,7 @@ def main():
                 falling_blobs = []
                 missed_blobs = 0
                 score = 0
+                player.update_held_color(None)
                 game_state = "playing"
 
         clock.tick(60)
