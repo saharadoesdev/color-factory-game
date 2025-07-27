@@ -2,6 +2,7 @@ import pygame
 import random
 from classes.player import Player
 from classes.blob import Blob
+from classes.bin import Bin
 
 MAX_MISSED_BLOBS = 3
 missed_blobs = 0
@@ -49,8 +50,24 @@ def load_assets():
         "BLUE": blue_image
     }
 
+    # Bins will temporarily use fruit images until I replace them
+    red_bin_image = pygame.image.load('assets/apple.png')
+    red_bin_image = pygame.transform.scale(red_bin_image, (100, 100))
+
+    yellow_bin_image = pygame.image.load('assets/banana.png')
+    yellow_bin_image = pygame.transform.scale(yellow_bin_image, (100, 100))
+
+    blue_bin_image = pygame.image.load('assets/orange.png')
+    blue_bin_image = pygame.transform.scale(blue_bin_image, (100, 100))
+
+    bin_images = {
+        "RED": red_bin_image,
+        "YELLOW": yellow_bin_image,
+        "BLUE": blue_bin_image
+    }
+
     # return background_image, player_image, [red_image, yellow_image, blue_image]
-    return background_image, player_image, blob_images    
+    return background_image, player_image, blob_images, bin_images
 
 def spawn_blob(falling_blobs, blob_images, screen_width):
     x_position = random.randint(0, screen_width - 50)
@@ -103,7 +120,7 @@ def render_score(window, score, font):
     score_text = font.render(f"Score: {score}", True, (0, 0, 0))
     window.blit(score_text, (10, 10))
 
-def render_game(window, background_image, player, player_position, falling_blobs, score, font):
+def render_game(window, background_image, player, falling_blobs, bins, score, font):
     # window.blit(background_image, (0, 0))
      # If there's no background image, fill with a solid color (added this)
     if background_image is None:
@@ -112,7 +129,7 @@ def render_game(window, background_image, player, player_position, falling_blobs
         window.fill((0, 43, 34))    # Fill lower area with darkest blue-green from background
         window.blit(background_image, (0, 0))
 
-    window.blit(player.image, player_position)
+    window.blit(player.image, (player.x, player.y))
 
     # Display indicator dot for currently held color
     if player.held_color is not None:
@@ -126,6 +143,9 @@ def render_game(window, background_image, player, player_position, falling_blobs
     for blob in falling_blobs:
         # window.blit(blob[2], (blob[0], blob[1]))
         window.blit(blob.image, (blob.x, blob.y))
+
+    for bin in bins:
+        window.blit(bin.image, (bin.x, bin.y))
 
     render_score(window, score, font)
     pygame.display.flip()
@@ -179,17 +199,23 @@ def main():
     global game_state, missed_blobs    # added these
 
     window = initialize_game()
-    background_image, player_image, blob_images = load_assets()
+    background_image, player_image, blob_images, bin_images = load_assets()
 
     # player_position = [350, 500]
     # player_speed = 5
-    player = Player(350, 500)
+    player = Player(350, 388, player_image)   # player is 100x100, position marks top left, so subtract 50 from desired center
     screen_width = 800
     screen_height = 600
     falling_blobs = []
     # blob_speed = 5
     spawn_timer = 0
     score = 0
+
+    # Create bins
+    red_bin = Bin(50, 500, bin_images["RED"], "RED")    # width is from 50 - 150
+    yellow_bin = Bin(350, 500, bin_images["YELLOW"], "YELLOW")  # 350 - 450
+    blue_bin = Bin(650, 500, bin_images["BLUE"], "BLUE")   # 650 - 750
+    bins = [red_bin, yellow_bin, blue_bin]
 
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
@@ -208,7 +234,7 @@ def main():
 
             # Spawn blobs periodically
             spawn_timer += 1
-            if spawn_timer > 30:
+            if spawn_timer > 50:    # Originally 30
               spawn_blob(falling_blobs, blob_images, screen_width)
               spawn_timer = 0
 
@@ -226,7 +252,7 @@ def main():
                     score += 1
 
             # Render the game
-            render_game(window, background_image, player, [player.x,player.y], falling_blobs, score, font)
+            render_game(window, background_image, player, falling_blobs, bins, score, font)
 
         elif game_state == "game_over":
             render_game_over(window, font)

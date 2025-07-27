@@ -1,13 +1,14 @@
 import pygame
 
 class Player():
-    def __init__(self, x, y):
+    def __init__(self, x, y, image):
         # super().__init__()
         self.x = x
         self.y = y
         self.speed = 8
-        player_image = pygame.image.load('assets/player_basket.png')    # Load original image
-        self.image = pygame.transform.scale(player_image, (100, 100))   # Scale image
+        # player_image = pygame.image.load('assets/player_basket.png')    # Load original image
+        # self.image = pygame.transform.scale(player_image, (100, 100))   # Scale image
+        self.image = image
         self.held_color = None
         # self.rect = self.image.get_rect(topleft=(x, y))   # I think i can use this?? is it just when it's a sprite?
         # self.vel_y = 0  # Vertical velocity for jumping
