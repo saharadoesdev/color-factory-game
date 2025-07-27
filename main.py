@@ -78,6 +78,8 @@ def move_blobs(falling_blobs, window_height):
         # if blob[1] > window_height:  # Check if the blob is off-screen
         #     missed_blobs += 1  # Increment the missed blob counter
         blob.move()
+        if blob.y > window_height:  # Check if the blob is off-screen
+             missed_blobs += 1  # Increment the missed blob counter
     falling_blobs[:] = [blob for blob in falling_blobs if blob.y <= window_height]  # Remove off-screen blobs
     return missed_blobs
 
