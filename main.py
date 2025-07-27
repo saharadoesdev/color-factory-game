@@ -167,7 +167,7 @@ def render_game_over(window, font):
     window.blit(restart_text, (window_width // 2 - restart_text.get_width() // 2, window_height // 2 + 10))
     pygame.display.flip()
 
-def handle_events(game_state):
+def handle_events(game_state, bins):
     """
     Handles game events, including quitting and restarting.
 
@@ -181,10 +181,16 @@ def handle_events(game_state):
     - move_right: Whether the player is moving right.
     """
     move_left = move_right = restart = False
+    clicked_bin_color = None
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return False, restart, move_left, move_right
+        
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Check for left mouse click
+            for bin in bins:
+                if bin.rect.collidepoint(event.pos):
+                    clicked_bin_color = bin.color
 
     keys = pygame.key.get_pressed()
     if game_state == "playing":
@@ -193,7 +199,7 @@ def handle_events(game_state):
     elif game_state == "game_over" and keys[pygame.K_r]:
         restart = True
 
-    return True, restart, move_left, move_right
+    return True, restart, move_left, move_right, clicked_bin_color
 
 def main():
     global game_state, missed_blobs    # added these
@@ -222,7 +228,7 @@ def main():
 
     running = True
     while running:
-        running, restart, move_left, move_right = handle_events(game_state)
+        running, restart, move_left, move_right, clicked_bin_color = handle_events(game_state, bins)
 
         if game_state == "playing":
           # Update player position
@@ -231,6 +237,16 @@ def main():
         #   player_position[0] += (move_right - move_left) * player.speed
         #   player_position[0] = max(0, min(700, player_position[0]))
             player.move(move_left, move_right)
+
+            if clicked_bin_color is not None:
+                if player.held_color is None:
+                    print("No color held!")
+                elif player.held_color == clicked_bin_color:
+                    print("Correct!")
+                else:
+                    print("Incorrect!")
+                player.update_held_color(None)
+
 
             # Spawn blobs periodically
             spawn_timer += 1
