@@ -5,8 +5,8 @@ from classes.blob import Blob
 from classes.bin import Bin
 from classes.hazard import Hazard
 
-MAX_MISSED_BLOBS = 3
-missed_blobs = 0
+# MAX_MISSED_BLOBS = 3
+# missed_blobs = 0
 game_state = "playing"  # The initial game state
 
 COLORS = {
@@ -33,8 +33,9 @@ def load_assets():
     background_image = pygame.transform.scale(background_image, (800, 489))
     # background_image = None     # temporary
 
-    player_image = pygame.image.load('assets/player_basket.png')
-    player_image = pygame.transform.scale(player_image, (100, 100))
+    # player_image = pygame.image.load('assets/player_basket.png')
+    player_image = pygame.image.load('assets/robot_idle_5.png')
+    player_image = pygame.transform.smoothscale(player_image, (57, 100))
 
     red_image = pygame.image.load('assets/apple.png')
     red_image = pygame.transform.scale(red_image, (50, 50))
@@ -97,16 +98,16 @@ def move_blobs(falling_blobs, window_height):
     Returns:
     - missed_blobs: The number of blobs that fell off the screen.
     """
-    missed_blobs = 0
+    # missed_blobs = 0      # Don't need this anymore, not tracking missed blobs
     for blob in falling_blobs:
         # blob[1] += blob_speed  # Move the blob down
         # if blob[1] > window_height:  # Check if the blob is off-screen
         #     missed_blobs += 1  # Increment the missed blob counter
         blob.move()
-        if blob.y > window_height:  # Check if the blob is off-screen
-             missed_blobs += 1  # Increment the missed blob counter
+        # if blob.y > window_height:  # Check if the blob is off-screen
+        #      missed_blobs += 1  # Increment the missed blob counter
     falling_blobs[:] = [blob for blob in falling_blobs if blob.y <= window_height]  # Remove off-screen blobs
-    return missed_blobs
+    # return missed_blobs
 
 def check_collision(player_position, blob_position):
     basket_x, basket_y = player_position
@@ -284,9 +285,11 @@ def main():
 
             # Move blobs and check for game-over condition
             # missed_blobs += move_blobs(falling_blobs, blob_speed, screen_height)
-            missed_blobs += move_blobs(falling_blobs, screen_height)
-            if missed_blobs >= MAX_MISSED_BLOBS:
-                game_state = "game_over"
+            # missed_blobs += move_blobs(falling_blobs, screen_height)
+            # if missed_blobs >= MAX_MISSED_BLOBS:
+            #     game_state = "game_over"
+
+            move_blobs(falling_blobs, screen_height)
 
             # Check for collisions
             for blob in falling_blobs[:]:
@@ -307,7 +310,7 @@ def main():
             # Handle restart
             if restart:
                 falling_blobs = []
-                missed_blobs = 0
+                # missed_blobs = 0
                 score = 0
                 player.update_held_color(None)
                 start_time = pygame.time.get_ticks()    # Reset timer
