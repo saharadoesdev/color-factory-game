@@ -36,20 +36,45 @@ def load_assets():
     player_image = pygame.image.load('assets/robot_idle_5.png')
     player_image = pygame.transform.smoothscale(player_image, (57, 100))
 
-    red_image = pygame.image.load('assets/blobs/red_blob.png')
-    red_image = pygame.transform.smoothscale(red_image, (50, 50))
+    # Load blob images, which are also used for robot's color indicator, and add to dictionaries
+    blob_images = {}
+    indicator_images = {}
+    for color in COLORS.keys():
+        file_path = f"assets/blobs/{color.lower()}_blob.png"
+        original_image = pygame.image.load(file_path)
+        blob_images[color] = pygame.transform.smoothscale(original_image, (50, 50))
+        indicator_images[color] = pygame.transform.smoothscale(original_image, (20, 20))
 
-    yellow_image = pygame.image.load('assets/blobs/yellow_blob.png')
-    yellow_image = pygame.transform.smoothscale(yellow_image, (50, 50))
+    # red_image = pygame.image.load('assets/blobs/red_blob.png')
+    # red_blob_image = pygame.transform.smoothscale(red_image, (50, 50))
+    # red_indicator_image = pygame.transform.smoothscale(red_image, (20, 20))
 
-    blue_image = pygame.image.load('assets/blobs/blue_blob.png')
-    blue_image = pygame.transform.smoothscale(blue_image, (50, 50))
+    # yellow_image = pygame.image.load('assets/blobs/yellow_blob.png')
+    # yellow_blob_image = pygame.transform.smoothscale(yellow_image, (50, 50))
+    # yellow_indicator_image = pygame.transform.smoothscale(yellow_image, (20, 20))
 
-    blob_images = {
-        "RED": red_image,
-        "YELLOW": yellow_image,
-        "BLUE": blue_image
-    }
+    # blue_image = pygame.image.load('assets/blobs/blue_blob.png')
+    # blue_blob_image = pygame.transform.smoothscale(blue_image, (50, 50))
+    # blue_indicator_image = pygame.transform.smoothscale(blue_image, (20, 20))
+
+    # orange_image = pygame.image.load('assets/blobs/orange_blob.png')
+    # orange_bin_image = pygame.transform.scale(orange_image, (100, 100))
+    # orange_indicator_image = pygame.transform.smoothscale(orange_image, (20, 20))
+
+    # green_image = pygame.image.load('assets/blobs/green_blob.png')
+    # green_bin_image = pygame.transform.scale(green_bin_image, (100, 100))
+    # green_indicator_image = pygame.transform.smoothscale(green_image, (20, 20))
+
+    # purple_image = pygame.image.load('assets/blobs/purple_blob.png')
+    # purple_bin_image = pygame.transform.scale(purple_bin_image, (100, 100))
+    # purple_indicator_image = pygame.transform.smoothscale(purple_image, (20, 20))
+
+    # blob_images = {
+    #     "RED": red_blob_image, "YELLOW": yellow_blob_image, "BLUE": blue_blob_image,
+    #     "ORANGE": orange_blob_image, "GREEN": green_blob_image, "PURPLE": purple_blob_image
+    # }
+
+    # indicator_images =
 
     # Bins will temporarily use blob images until I replace them
     red_bin_image = pygame.image.load('assets/blobs/red_blob.png')
@@ -80,7 +105,7 @@ def load_assets():
     wrench_image = pygame.transform.smoothscale(wrench_image, (50, 50))
 
     # return background_image, player_image, [red_image, yellow_image, blue_image]
-    return background_image, player_image, blob_images, bin_images, wrench_image
+    return background_image, player_image, blob_images, indicator_images, bin_images, wrench_image
 
 def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
     x_position = random.randint(0, screen_width - 50)
@@ -144,7 +169,7 @@ def render_combo(window, combo_multiplier, font):
     combo_text = font.render(f"Combo: {combo_multiplier}x", True, (0, 0, 0))
     window.blit(combo_text, (325, 10))
 
-def render_game(window, background_image, player, falling_blobs, bins, score, time_left, combo_multiplier, font):
+def render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, font):
     # window.blit(background_image, (0, 0))
      # If there's no background image, fill with a solid color (added this)
     if background_image is None:
@@ -155,13 +180,18 @@ def render_game(window, background_image, player, falling_blobs, bins, score, ti
 
     window.blit(player.image, (player.x, player.y))
 
-    # Display indicator dot for currently held color
+    # # Display indicator dot for currently held color
+    # if player.held_color is not None:
+    #     indicator_pos = (player.x + player.image.get_width() // 2, player.y) # calculate indicator dot's position
+    # # Look up the RGB tuple from the COLORS dictionary
+    #     color_to_draw = COLORS[player.held_color]
+    # # Use the retrieved tuple to draw the circle
+    #     pygame.draw.circle(window, color_to_draw, indicator_pos, 10)
+
+    # Display indicator above robot for currently held color
     if player.held_color is not None:
-        indicator_pos = (player.x, player.y) # calculate indicator dot's position
-    # Look up the RGB tuple from the COLORS dictionary
-        color_to_draw = COLORS[player.held_color]
-    # Use the retrieved tuple to draw the circle
-        pygame.draw.circle(window, color_to_draw, indicator_pos, 15)
+        indicator_pos = (player.x + (player.image.get_width() // 2) - 10, player.y - 10) # calculate indicator dot's position
+        window.blit(indicator_images[player.held_color], indicator_pos)
 
     for blob in falling_blobs:
         # window.blit(blob[2], (blob[0], blob[1]))
@@ -231,7 +261,7 @@ def main():
     global game_state, missed_blobs    # added these
 
     window = initialize_game()
-    background_image, player_image, blob_images, bin_images, wrench_image = load_assets()
+    background_image, player_image, blob_images, indicator_images, bin_images, wrench_image = load_assets()
 
     # player_position = [350, 500]
     # player_speed = 5
@@ -320,7 +350,7 @@ def main():
                     # score += 1
 
             # Render the game
-            render_game(window, background_image, player, falling_blobs, bins, score, time_left, combo_multiplier, font)
+            render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, font)
 
         elif game_state == "game_over":
             render_game_over(window, font)
