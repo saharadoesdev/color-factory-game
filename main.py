@@ -33,18 +33,17 @@ def load_assets():
     background_image = pygame.transform.scale(background_image, (800, 489))
     # background_image = None     # temporary
 
-    # player_image = pygame.image.load('assets/player_basket.png')
     player_image = pygame.image.load('assets/robot_idle_5.png')
     player_image = pygame.transform.smoothscale(player_image, (57, 100))
 
-    red_image = pygame.image.load('assets/apple.png')
-    red_image = pygame.transform.scale(red_image, (50, 50))
+    red_image = pygame.image.load('assets/blobs/red_blob.png')
+    red_image = pygame.transform.smoothscale(red_image, (50, 50))
 
-    yellow_image = pygame.image.load('assets/banana.png')
-    yellow_image = pygame.transform.scale(yellow_image, (50, 50))
+    yellow_image = pygame.image.load('assets/blobs/yellow_blob.png')
+    yellow_image = pygame.transform.smoothscale(yellow_image, (50, 50))
 
-    blue_image = pygame.image.load('assets/orange.png')
-    blue_image = pygame.transform.scale(blue_image, (50, 50))
+    blue_image = pygame.image.load('assets/blobs/blue_blob.png')
+    blue_image = pygame.transform.smoothscale(blue_image, (50, 50))
 
     blob_images = {
         "RED": red_image,
@@ -52,14 +51,14 @@ def load_assets():
         "BLUE": blue_image
     }
 
-    # Bins will temporarily use fruit images until I replace them
-    red_bin_image = pygame.image.load('assets/apple.png')
+    # Bins will temporarily use blob images until I replace them
+    red_bin_image = pygame.image.load('assets/blobs/red_blob.png')
     red_bin_image = pygame.transform.scale(red_bin_image, (100, 100))
 
-    yellow_bin_image = pygame.image.load('assets/banana.png')
+    yellow_bin_image = pygame.image.load('assets/blobs/yellow_blob.png')
     yellow_bin_image = pygame.transform.scale(yellow_bin_image, (100, 100))
 
-    blue_bin_image = pygame.image.load('assets/orange.png')
+    blue_bin_image = pygame.image.load('assets/blobs/blue_blob.png')
     blue_bin_image = pygame.transform.scale(blue_bin_image, (100, 100))
 
     bin_images = {
@@ -69,8 +68,8 @@ def load_assets():
     }
 
     # Hazards will temporarily use basket image until I replace them lol
-    wrench_image = pygame.image.load('assets/player_basket.png')
-    wrench_image = pygame.transform.scale(wrench_image, (50, 50))
+    wrench_image = pygame.image.load('assets/wrench.png')
+    wrench_image = pygame.transform.smoothscale(wrench_image, (50, 50))
 
     # return background_image, player_image, [red_image, yellow_image, blue_image]
     return background_image, player_image, blob_images, bin_images, wrench_image
@@ -223,7 +222,7 @@ def main():
 
     # player_position = [350, 500]
     # player_speed = 5
-    player = Player(350, 388, player_image)   # player is 100x100, position marks top left, so subtract 50 from desired center
+    player = Player(400 - (player_image.get_width() // 2), 388, player_image)   # NOW PLAYER is 57 x 100, but this is dynamic to center the player! // player is 100x100, position marks top left, so subtract 50 from desired center
     screen_width = 800
     screen_height = 600
     falling_blobs = []
