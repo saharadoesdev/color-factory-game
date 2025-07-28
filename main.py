@@ -187,7 +187,7 @@ def render_game(window, background_image, indicator_images, player, falling_blob
     render_combo(window, combo_multiplier, font)
     pygame.display.flip()
 
-def render_game_over(window, font):
+def render_game_over(window, font, new_high_score):
     """
     Displays the game-over screen.
 
@@ -200,6 +200,9 @@ def render_game_over(window, font):
 
     # Center the text on the screen
     window_width, window_height = window.get_size()
+    if new_high_score:
+        high_score_text = font.render("New High Score!", True, (255, 255, 0))  # Yellow text
+        window.blit(high_score_text, (window_width // 2 - high_score_text.get_width() // 2, window_height // 2 - 110))
     window.blit(game_over_text, (window_width // 2 - game_over_text.get_width() // 2, window_height // 2 - 50))
     window.blit(restart_text, (window_width // 2 - restart_text.get_width() // 2, window_height // 2 + 10))
     pygame.display.flip()
@@ -260,6 +263,7 @@ def main():
     # blob_speed = 5
     spawn_timer = 0
     score = 0
+    high_score = 0
     combo_multiplier = 1
 
     # Create bins - each 69 wide, so space them out accordingly
@@ -350,7 +354,11 @@ def main():
             render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, font)
 
         elif game_state == "game_over":
-            render_game_over(window, font)
+            new_high_score = False
+            if score > high_score:
+                new_high_score = True
+                high_score = score
+            render_game_over(window, font, new_high_score)
 
             # Handle restart
             if restart:
