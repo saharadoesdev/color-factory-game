@@ -3,6 +3,7 @@ import random
 from classes.player import Player, MIX_RULES
 from classes.blob import Blob
 from classes.bin import Bin
+from classes.hazard import Hazard
 
 MAX_MISSED_BLOBS = 3
 missed_blobs = 0
@@ -66,16 +67,23 @@ def load_assets():
         "BLUE": blue_bin_image
     }
 
-    # return background_image, player_image, [red_image, yellow_image, blue_image]
-    return background_image, player_image, blob_images, bin_images
+    # Hazards will temporarily use basket image until I replace them lol
+    wrench_image = pygame.image.load('assets/player_basket.png')
+    wrench_image = pygame.transform.scale(wrench_image, (50, 50))
 
-def spawn_blob(falling_blobs, blob_images, screen_width):
+    # return background_image, player_image, [red_image, yellow_image, blue_image]
+    return background_image, player_image, blob_images, bin_images, wrench_image
+
+def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
     x_position = random.randint(0, screen_width - 50)
     y_position = 0
-    color_to_spawn = random.choice(SPAWNABLE_COLORS)    # Choose blob color randomly
-    # blob_image = random.choice(blob_images)
-    # falling_blobs.append([x_position, y_position, blob_image])
-    falling_blobs.append(Blob(x_position, y_position, blob_images[color_to_spawn], color_to_spawn)) # Create and spawn new blob
+    if random.random() < 0.20:  # Adjust value - HAZARD_CHANCE
+        falling_blobs.append(Hazard(x_position, y_position, hazard_image))
+    else:   # Spawn blob
+        color_to_spawn = random.choice(SPAWNABLE_COLORS)    # Choose blob color randomly
+        # blob_image = random.choice(blob_images)
+        # falling_blobs.append([x_position, y_position, blob_image])
+        falling_blobs.append(Blob(x_position, y_position, blob_images[color_to_spawn], color_to_spawn)) # Create and spawn new blob
 
 def move_blobs(falling_blobs, window_height):
     """
@@ -210,7 +218,7 @@ def main():
     global game_state, missed_blobs    # added these
 
     window = initialize_game()
-    background_image, player_image, blob_images, bin_images = load_assets()
+    background_image, player_image, blob_images, bin_images, wrench_image = load_assets()
 
     # player_position = [350, 500]
     # player_speed = 5
@@ -243,7 +251,7 @@ def main():
             # Check timer
             elapsed_time = pygame.time.get_ticks() - start_time
             time_left = (game_duration - elapsed_time) // 1000
-            print(time_left)
+            # print(time_left)
         
             if time_left <= 0:
                 game_state = "game_over"
@@ -271,7 +279,7 @@ def main():
             # Spawn blobs periodically
             spawn_timer += 1
             if spawn_timer > 50:    # Originally 30
-              spawn_blob(falling_blobs, blob_images, screen_width)
+              spawn_blob(falling_blobs, blob_images, wrench_image, screen_width)
               spawn_timer = 0
 
             # Move blobs and check for game-over condition
@@ -284,7 +292,8 @@ def main():
             for blob in falling_blobs[:]:
                 if check_collision([player.x,player.y], [blob.x, blob.y]):
                     falling_blobs.remove(blob)
-                    player.update_held_color(blob.color)
+                    if isinstance(blob, Blob):  # This will be more refined later probably haha
+                        player.update_held_color(blob.color)
                     # score += 1
 
             # Render the game
