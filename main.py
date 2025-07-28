@@ -1,6 +1,6 @@
 import pygame
 import random
-from classes.player import Player
+from classes.player import Player, MIX_RULES
 from classes.blob import Blob
 from classes.bin import Bin
 
@@ -12,9 +12,9 @@ COLORS = {
     "RED": (255, 0, 0),
     "YELLOW": (255, 255, 0),
     "BLUE": (0, 0, 255),
-    # "GREEN": (0, 255, 0),
-    # "PURPLE": (128, 0, 128),
-    # "ORANGE": (255, 165, 0),
+    "ORANGE": (255, 165, 0),
+    "GREEN": (0, 255, 0),
+    "PURPLE": (128, 0, 128),
     # "WHITE": (255, 255, 255)
 }
 
@@ -185,12 +185,13 @@ def handle_events(game_state, bins):
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            return False, restart, move_left, move_right
+            return False, restart, move_left, move_right, clicked_bin_color
         
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Check for left mouse click
             for bin in bins:
                 if bin.rect.collidepoint(event.pos):
                     clicked_bin_color = bin.color
+                    break   # stop checking once clicked bin is found
 
     keys = pygame.key.get_pressed()
     if game_state == "playing":
@@ -241,7 +242,8 @@ def main():
             if clicked_bin_color is not None:
                 if player.held_color is None:
                     print("No color held!")
-                elif player.held_color == clicked_bin_color:
+                elif player.held_color == clicked_bin_color or player.held_color in MIX_RULES[clicked_bin_color].values():
+                    # Drop color in matching bin or parent primary color bin (ex., purple can go in red or blue)
                     print("Correct!")
                 else:
                     print("Incorrect!")

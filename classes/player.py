@@ -1,5 +1,11 @@
 import pygame
 
+MIX_RULES = {
+    "RED": {"BLUE": "PURPLE", "YELLOW": "ORANGE"},
+    "BLUE": {"RED": "PURPLE", "YELLOW": "GREEN"},
+    "YELLOW": {"RED": "ORANGE", "BLUE": "GREEN"}
+}
+
 class Player():
     def __init__(self, x, y, image):
         # super().__init__()
@@ -41,11 +47,25 @@ class Player():
         # if self.rect.right > 800 + 400:  
         #     self.rect.right = 800 + 400
 
-    def update_held_color(self, color):
+    def update_held_color(self, new_color):
         # if held_color == "red" and color == "blue":   # For later use when mixing colors
         #     self.held_color = "purple"    # Actually I'll use a dictionary instead !!
         # else: # held_color == None
         #     self.held_color = color
 
-        self.held_color = color
+        # self.held_color = color
         # print(self.held_color)    # for testing
+
+        if new_color == None:   # Clear held color
+            self.held_color = None
+        elif self.held_color == None:
+            self.held_color = new_color
+            # print("empty hand before, now " + self.held_color)
+        elif self.held_color in MIX_RULES and new_color in MIX_RULES[self.held_color]:  # Mix colors based on MIX_RULES !
+            self.held_color = MIX_RULES[self.held_color][new_color]
+            # print("caught " + new_color + "and mixed to " + self.held_color)
+        # elif self.held_color is not new_color:    # I'll hopefully figure something out for this later!
+        #     # Handle impossible mixes - turn brown maybe?
+        #     print("No mix possible!")
+
+        # If player catches the color they're already holding, or an impossible mix, nothing happens
