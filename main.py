@@ -294,6 +294,8 @@ def main():
                     falling_blobs.remove(blob)
                     if isinstance(blob, Blob):  # This will be more refined later probably haha
                         player.update_held_color(blob.color)
+                    else:   # Hazard, so stun
+                        player.get_stunned()
                     # score += 1
 
             # Render the game

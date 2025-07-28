@@ -16,6 +16,8 @@ class Player():
         # self.image = pygame.transform.scale(player_image, (100, 100))   # Scale image
         self.image = image
         self.held_color = None
+        self.is_stunned = False
+        self.stun_end_time = 0
         # self.rect = self.image.get_rect(topleft=(x, y))   # I think i can use this?? is it just when it's a sprite?
         # self.vel_y = 0  # Vertical velocity for jumping
         # self.on_ground = False  # Track if player is on a surface
@@ -34,6 +36,13 @@ class Player():
         # if move_right:
         #     self.rect.x += self.speed
 
+        if self.is_stunned:
+            if pygame.time.get_ticks() > self.stun_end_time:    # Check if stun time is over
+                self.is_stunned = False
+            else:   # Stunned, so can't move
+                return
+            
+        # Move if left or right key pressed
         self.x += (move_right - move_left) * self.speed
         self.x = max(0, min(700, self.x))
 
@@ -69,3 +78,7 @@ class Player():
         #     print("No mix possible!")
 
         # If player catches the color they're already holding, or an impossible mix, nothing happens
+
+    def get_stunned(self, duration=1200):   # 1.2 seconds
+        self.is_stunned = True
+        self.stun_end_time = pygame.time.get_ticks() + duration
