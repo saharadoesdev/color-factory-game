@@ -120,7 +120,11 @@ def render_score(window, score, font):
     score_text = font.render(f"Score: {score}", True, (0, 0, 0))
     window.blit(score_text, (10, 10))
 
-def render_game(window, background_image, player, falling_blobs, bins, score, font):
+def render_timer(window, time_left, font):
+    timer_text = font.render(f"Timer: {time_left}s", True, (0, 0, 0))
+    window.blit(timer_text, (650, 10))
+
+def render_game(window, background_image, player, falling_blobs, bins, score, time_left, font):
     # window.blit(background_image, (0, 0))
      # If there's no background image, fill with a solid color (added this)
     if background_image is None:
@@ -136,7 +140,6 @@ def render_game(window, background_image, player, falling_blobs, bins, score, fo
         indicator_pos = (player.x, player.y) # calculate indicator dot's position
     # Look up the RGB tuple from the COLORS dictionary
         color_to_draw = COLORS[player.held_color]
-    
     # Use the retrieved tuple to draw the circle
         pygame.draw.circle(window, color_to_draw, indicator_pos, 15)
 
@@ -148,6 +151,7 @@ def render_game(window, background_image, player, falling_blobs, bins, score, fo
         window.blit(bin.image, (bin.x, bin.y))
 
     render_score(window, score, font)
+    render_timer(window, time_left, font)
     pygame.display.flip()
 
 def render_game_over(window, font):
@@ -226,12 +230,25 @@ def main():
 
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
+    
+    # Set up timer
+    start_time = pygame.time.get_ticks()
+    game_duration = 30000   # 30 seconds, make longer later
 
     running = True
     while running:
         running, restart, move_left, move_right, clicked_bin_color = handle_events(game_state, bins)
 
         if game_state == "playing":
+            # Check timer
+            elapsed_time = pygame.time.get_ticks() - start_time
+            time_left = (game_duration - elapsed_time) // 1000
+            print(time_left)
+        
+            if time_left <= 0:
+                game_state = "game_over"
+                time_left = 0
+
           # Update player position
         #   player_position = update_player_position(player_position, move_left, move_right, player_speed, screen_width)
 
@@ -240,13 +257,14 @@ def main():
             player.move(move_left, move_right)
 
             if clicked_bin_color is not None:
-                if player.held_color is None:
-                    print("No color held!")
-                elif player.held_color == clicked_bin_color or player.held_color in MIX_RULES[clicked_bin_color].values():
+                # if player.held_color is None:     # Nothing needs to happen (for now?)
+                #     print("No color held!")
+                if player.held_color == clicked_bin_color or player.held_color in MIX_RULES[clicked_bin_color].values():
                     # Drop color in matching bin or parent primary color bin (ex., purple can go in red or blue)
-                    print("Correct!")
-                else:
-                    print("Incorrect!")
+                    # print("Correct!")
+                    score += 10
+                # else:             # Add penalty later
+                #     print("Incorrect!")
                 player.update_held_color(None)
 
 
@@ -267,10 +285,10 @@ def main():
                 if check_collision([player.x,player.y], [blob.x, blob.y]):
                     falling_blobs.remove(blob)
                     player.update_held_color(blob.color)
-                    score += 1
+                    # score += 1
 
             # Render the game
-            render_game(window, background_image, player, falling_blobs, bins, score, font)
+            render_game(window, background_image, player, falling_blobs, bins, score, time_left, font)
 
         elif game_state == "game_over":
             render_game_over(window, font)
@@ -281,6 +299,7 @@ def main():
                 missed_blobs = 0
                 score = 0
                 player.update_held_color(None)
+                start_time = pygame.time.get_ticks()    # Reset timer
                 game_state = "playing"
 
         clock.tick(60)
