@@ -61,10 +61,18 @@ def load_assets():
     blue_bin_image = pygame.image.load('assets/blobs/blue_blob.png')
     blue_bin_image = pygame.transform.scale(blue_bin_image, (100, 100))
 
+    orange_bin_image = pygame.image.load('assets/blobs/orange_blob.png')
+    orange_bin_image = pygame.transform.scale(orange_bin_image, (100, 100))
+
+    green_bin_image = pygame.image.load('assets/blobs/green_blob.png')
+    green_bin_image = pygame.transform.scale(green_bin_image, (100, 100))
+
+    purple_bin_image = pygame.image.load('assets/blobs/purple_blob.png')
+    purple_bin_image = pygame.transform.scale(purple_bin_image, (100, 100))
+
     bin_images = {
-        "RED": red_bin_image,
-        "YELLOW": yellow_bin_image,
-        "BLUE": blue_bin_image
+        "RED": red_bin_image, "YELLOW": yellow_bin_image, "BLUE": blue_bin_image,
+        "ORANGE": orange_bin_image, "GREEN": green_bin_image, "PURPLE": purple_bin_image
     }
 
     # Hazards will temporarily use basket image until I replace them lol
@@ -236,11 +244,14 @@ def main():
     score = 0
     combo_multiplier = 1
 
-    # Create bins
-    red_bin = Bin(50, 500, bin_images["RED"], "RED")    # width is from 50 - 150
-    yellow_bin = Bin(350, 500, bin_images["YELLOW"], "YELLOW")  # 350 - 450
-    blue_bin = Bin(650, 500, bin_images["BLUE"], "BLUE")   # 650 - 750
-    bins = [red_bin, yellow_bin, blue_bin]
+    # Create bins - each 100 wide, so space them out accordingly
+    red_bin = Bin(25, 500, bin_images["RED"], "RED")    # width is from 50 - 150
+    orange_bin = Bin(155, 500, bin_images["ORANGE"], "ORANGE")
+    yellow_bin = Bin(285, 500, bin_images["YELLOW"], "YELLOW")  # 350 - 450
+    green_bin = Bin(425, 500, bin_images["GREEN"], "GREEN")
+    blue_bin = Bin(545, 500, bin_images["BLUE"], "BLUE")   # 650 - 750
+    purple_bin = Bin(675, 500, bin_images["PURPLE"], "PURPLE")   # 650 - 750
+    bins = [red_bin, orange_bin,yellow_bin, green_bin, blue_bin, purple_bin]
 
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
@@ -273,8 +284,8 @@ def main():
             if clicked_bin_color is not None:
                 # if player.held_color is None:     # Nothing needs to happen (for now?)
                 #     print("No color held!")
-                if player.held_color == clicked_bin_color or player.held_color in MIX_RULES[clicked_bin_color].values():
-                    # Drop color in matching bin or parent primary color bin (ex., purple can go in red or blue)
+                if player.held_color == clicked_bin_color:   # or player.held_color in MIX_RULES[clicked_bin_color].values():
+                    # Drop color in matching bin // OLD: or parent primary color bin (ex., purple can go in red or blue)
                     # print("Correct!")
                     score += 10 * combo_multiplier
                     combo_multiplier = 5 if combo_multiplier == 5 else combo_multiplier + 1  # Max combo multiplier is 5x
