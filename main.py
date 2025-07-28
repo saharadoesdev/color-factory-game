@@ -23,6 +23,7 @@ SPAWNABLE_COLORS = ["RED", "BLUE", "YELLOW"]
 
 def initialize_game():
     pygame.init()
+    pygame.mixer.init()
     window_size = (800, 600)
     window = pygame.display.set_mode(window_size)
     pygame.display.set_caption('Falling Blob Game')
@@ -44,37 +45,6 @@ def load_assets():
         original_image = pygame.image.load(file_path)
         blob_images[color] = pygame.transform.smoothscale(original_image, (50, 50))
         indicator_images[color] = pygame.transform.smoothscale(original_image, (20, 20))
-
-    # red_image = pygame.image.load('assets/blobs/red_blob.png')
-    # red_blob_image = pygame.transform.smoothscale(red_image, (50, 50))
-    # red_indicator_image = pygame.transform.smoothscale(red_image, (20, 20))
-
-    # yellow_image = pygame.image.load('assets/blobs/yellow_blob.png')
-    # yellow_blob_image = pygame.transform.smoothscale(yellow_image, (50, 50))
-    # yellow_indicator_image = pygame.transform.smoothscale(yellow_image, (20, 20))
-
-    # blue_image = pygame.image.load('assets/blobs/blue_blob.png')
-    # blue_blob_image = pygame.transform.smoothscale(blue_image, (50, 50))
-    # blue_indicator_image = pygame.transform.smoothscale(blue_image, (20, 20))
-
-    # orange_image = pygame.image.load('assets/blobs/orange_blob.png')
-    # orange_bin_image = pygame.transform.scale(orange_image, (100, 100))
-    # orange_indicator_image = pygame.transform.smoothscale(orange_image, (20, 20))
-
-    # green_image = pygame.image.load('assets/blobs/green_blob.png')
-    # green_bin_image = pygame.transform.scale(green_bin_image, (100, 100))
-    # green_indicator_image = pygame.transform.smoothscale(green_image, (20, 20))
-
-    # purple_image = pygame.image.load('assets/blobs/purple_blob.png')
-    # purple_bin_image = pygame.transform.scale(purple_bin_image, (100, 100))
-    # purple_indicator_image = pygame.transform.smoothscale(purple_image, (20, 20))
-
-    # blob_images = {
-    #     "RED": red_blob_image, "YELLOW": yellow_blob_image, "BLUE": blue_blob_image,
-    #     "ORANGE": orange_blob_image, "GREEN": green_blob_image, "PURPLE": purple_blob_image
-    # }
-
-    # indicator_images =
 
     # Bins will temporarily use blob images until I replace them
     red_bin_image = pygame.image.load('assets/blobs/red_blob.png')
@@ -100,7 +70,7 @@ def load_assets():
         "ORANGE": orange_bin_image, "GREEN": green_bin_image, "PURPLE": purple_bin_image
     }
 
-    # Hazards will temporarily use basket image until I replace them lol
+    # Hazard image (will probably add more later)
     wrench_image = pygame.image.load('assets/wrench.png')
     wrench_image = pygame.transform.smoothscale(wrench_image, (50, 50))
 
@@ -290,6 +260,10 @@ def main():
     start_time = pygame.time.get_ticks()
     game_duration = 30000   # 30 seconds, make longer later
 
+    # Start music on infinite loop
+    pygame.mixer.music.load("assets/audio/background_music.wav")
+    pygame.mixer.music.play(loops=-1)
+
     running = True
     while running:
         running, restart, move_left, move_right, clicked_bin_color = handle_events(game_state, bins)
@@ -367,6 +341,7 @@ def main():
 
         clock.tick(60)
 
+    pygame.mixer.music.stop()
     pygame.quit()
 
 if __name__ == "__main__":
