@@ -132,7 +132,11 @@ def render_timer(window, time_left, font):
     timer_text = font.render(f"Timer: {time_left}s", True, (0, 0, 0))
     window.blit(timer_text, (650, 10))
 
-def render_game(window, background_image, player, falling_blobs, bins, score, time_left, font):
+def render_combo(window, combo_multiplier, font):
+    combo_text = font.render(f"Combo: {combo_multiplier}x", True, (0, 0, 0))
+    window.blit(combo_text, (325, 10))
+
+def render_game(window, background_image, player, falling_blobs, bins, score, time_left, combo_multiplier, font):
     # window.blit(background_image, (0, 0))
      # If there's no background image, fill with a solid color (added this)
     if background_image is None:
@@ -160,6 +164,7 @@ def render_game(window, background_image, player, falling_blobs, bins, score, ti
 
     render_score(window, score, font)
     render_timer(window, time_left, font)
+    render_combo(window, combo_multiplier, font)
     pygame.display.flip()
 
 def render_game_over(window, font):
@@ -229,6 +234,7 @@ def main():
     # blob_speed = 5
     spawn_timer = 0
     score = 0
+    combo_multiplier = 1
 
     # Create bins
     red_bin = Bin(50, 500, bin_images["RED"], "RED")    # width is from 50 - 150
@@ -270,9 +276,10 @@ def main():
                 if player.held_color == clicked_bin_color or player.held_color in MIX_RULES[clicked_bin_color].values():
                     # Drop color in matching bin or parent primary color bin (ex., purple can go in red or blue)
                     # print("Correct!")
-                    score += 10
-                # else:             # Add penalty later
-                #     print("Incorrect!")
+                    score += 10 * combo_multiplier
+                    combo_multiplier = 5 if combo_multiplier == 5 else combo_multiplier + 1  # Max combo multiplier is 5x
+                elif player.held_color is not None:   # If color dropped in wrong bin, reset combo
+                    combo_multiplier = 1
                 player.update_held_color(None)
 
 
@@ -298,10 +305,11 @@ def main():
                         player.update_held_color(blob.color)
                     else:   # Hazard, so stun
                         player.get_stunned()
+                        combo_multiplier = 1    # Reset combo
                     # score += 1
 
             # Render the game
-            render_game(window, background_image, player, falling_blobs, bins, score, time_left, font)
+            render_game(window, background_image, player, falling_blobs, bins, score, time_left, combo_multiplier, font)
 
         elif game_state == "game_over":
             render_game_over(window, font)
@@ -312,6 +320,7 @@ def main():
                 # missed_blobs = 0
                 score = 0
                 player.update_held_color(None)
+                combo_multiplier = 1
                 start_time = pygame.time.get_ticks()    # Reset timer
                 game_state = "playing"
 
