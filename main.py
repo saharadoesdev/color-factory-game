@@ -7,7 +7,7 @@ from classes.hazard import Hazard
 
 # MAX_MISSED_BLOBS = 3
 # missed_blobs = 0
-game_state = "playing"  # The initial game state
+game_state = "start_menu"  # The initial game state
 
 COLORS = {
     "RED": (255, 0, 0),
@@ -33,6 +33,8 @@ def load_assets():
     background_image = pygame.image.load('assets/background.jpg')
     background_image = pygame.transform.scale(background_image, (800, 489))
     # background_image = None     # temporary
+
+    start_menu_image = pygame.image.load('assets/start_screen.png')
 
     player_image = pygame.image.load('assets/robot_idle_5.png')
     player_image = pygame.transform.smoothscale(player_image, (57, 100))
@@ -75,7 +77,7 @@ def load_assets():
     wrench_image = pygame.transform.smoothscale(wrench_image, (50, 50))
 
     # return background_image, player_image, [red_image, yellow_image, blue_image]
-    return background_image, player_image, blob_images, indicator_images, bin_images, wrench_image
+    return background_image, start_menu_image, player_image, blob_images, indicator_images, bin_images, wrench_image
 
 def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
     x_position = random.randint(0, screen_width - 50)
@@ -192,6 +194,10 @@ def render_game_over(window, font):
     window.blit(restart_text, (window_width // 2 - restart_text.get_width() // 2, window_height // 2 + 10))
     pygame.display.flip()
 
+def render_start_menu(window, start_menu_image):
+    window.blit(start_menu_image, (0, 0))
+    pygame.display.flip()
+
 def handle_events(game_state, bins):
     """
     Handles game events, including quitting and restarting.
@@ -205,12 +211,12 @@ def handle_events(game_state, bins):
     - move_left: Whether the player is moving left.
     - move_right: Whether the player is moving right.
     """
-    move_left = move_right = restart = False
+    move_left = move_right = restart = start_game = False
     clicked_bin_color = None
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            return False, restart, move_left, move_right, clicked_bin_color
+            return False, start_game, restart, move_left, move_right, clicked_bin_color
         
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Check for left mouse click
             for bin in bins:
@@ -219,19 +225,21 @@ def handle_events(game_state, bins):
                     break   # stop checking once clicked bin is found
 
     keys = pygame.key.get_pressed()
+    if game_state == "start_menu" and any(keys):
+        start_game = True
     if game_state == "playing":
         move_left = keys[pygame.K_LEFT]
         move_right = keys[pygame.K_RIGHT]
     elif game_state == "game_over" and keys[pygame.K_r]:
         restart = True
 
-    return True, restart, move_left, move_right, clicked_bin_color
+    return True, start_game, restart, move_left, move_right, clicked_bin_color
 
 def main():
     global game_state, missed_blobs    # added these
 
     window = initialize_game()
-    background_image, player_image, blob_images, indicator_images, bin_images, wrench_image = load_assets()
+    background_image, start_menu_image, player_image, blob_images, indicator_images, bin_images, wrench_image = load_assets()
 
     # player_position = [350, 500]
     # player_speed = 5
@@ -257,7 +265,7 @@ def main():
     font = pygame.font.Font(None, 36)
     
     # Set up timer
-    start_time = pygame.time.get_ticks()
+    # start_time = pygame.time.get_ticks()
     game_duration = 30000   # 30 seconds, make longer later
 
     # Start music on infinite loop
@@ -266,9 +274,14 @@ def main():
 
     running = True
     while running:
-        running, restart, move_left, move_right, clicked_bin_color = handle_events(game_state, bins)
+        running, start_game, restart, move_left, move_right, clicked_bin_color = handle_events(game_state, bins)
 
-        if game_state == "playing":
+        if game_state == "start_menu":
+            render_start_menu(window, start_menu_image)
+            if start_game:
+                start_time = pygame.time.get_ticks()
+                game_state = "playing"
+        elif game_state == "playing":
             # Check timer
             elapsed_time = pygame.time.get_ticks() - start_time
             time_left = (game_duration - elapsed_time) // 1000
