@@ -136,19 +136,49 @@ def check_collision(player_position, blob_position):
         return True
     return False
 
-def render_score(window, score, font):
+def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font):
+
+# def render_score(window, score, font):
     score_text = font.render(f"Score: {score}", True, (0, 0, 0))
     window.blit(score_text, (10, 10))
 
-def render_timer(window, time_left, font):
+# def render_timer(window, time_left, font):
     timer_text = font.render(f"Timer: {time_left}s", True, (0, 0, 0))
     window.blit(timer_text, (650, 10))
 
-def render_combo(window, combo_multiplier, font):
+# def render_combo(window, combo_multiplier, font):
     combo_text = font.render(f"Combo: {combo_multiplier}x", True, (0, 0, 0))
     window.blit(combo_text, (325, 10))
 
-def render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, font):
+    # Display possible color combinations (like a recipe book):
+    # plus_sign = font.render("+", True, (255,255,255))
+    # equals_sign = font.render("=", True, (255,255,255))
+    start_x = 10
+    start_y = 10
+    # Orange
+    window.blit(indicator_images["RED"], (start_x, start_y))
+    window.blit(plus_sign, (start_x + 25, start_y - 3))
+    window.blit(indicator_images["YELLOW"], (start_x + 45, start_y))
+    window.blit(equals_sign, (start_x + 70, start_y - 3))
+    window.blit(indicator_images["ORANGE"], (start_x + 90, start_y))
+
+    start_y += 30
+    # Green
+    window.blit(indicator_images["YELLOW"], (start_x, start_y))
+    window.blit(plus_sign, (start_x + 25, start_y - 3))
+    window.blit(indicator_images["BLUE"], (start_x + 45, start_y))
+    window.blit(equals_sign, (start_x + 70, start_y - 3))
+    window.blit(indicator_images["GREEN"], (start_x + 90, start_y))
+
+    start_y += 30
+    # Purple
+    window.blit(indicator_images["BLUE"], (start_x, start_y))
+    window.blit(plus_sign, (start_x + 25, start_y - 3))
+    window.blit(indicator_images["RED"], (start_x + 45, start_y))
+    window.blit(equals_sign, (start_x + 70, start_y - 3))
+    window.blit(indicator_images["PURPLE"], (start_x + 90, start_y))
+
+def render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font):
     # window.blit(background_image, (0, 0))
      # If there's no background image, fill with a solid color (added this)
     if background_image is None:
@@ -182,9 +212,10 @@ def render_game(window, background_image, indicator_images, player, falling_blob
         bin_label_pos = (bin.x + (bin.image.get_width() // 2) - 8, bin.y + (bin.image.get_height() // 2) - 10)  # Center position
         window.blit(indicator_images[bin.color], bin_label_pos)
 
-    render_score(window, score, font)
-    render_timer(window, time_left, font)
-    render_combo(window, combo_multiplier, font)
+    render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font)
+    # render_score(window, score, font)
+    # render_timer(window, time_left, font)
+    # render_combo(window, combo_multiplier, font)
     pygame.display.flip()
 
 def render_game_over(window, font, new_high_score):
@@ -277,6 +308,10 @@ def main():
 
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
+
+    # Set up "recipe book" UI display (displayed by render_ui function later)
+    plus_sign = font.render("+", True, (255,255,255))
+    equals_sign = font.render("=", True, (255,255,255))
     
     # Set up timer
     # start_time = pygame.time.get_ticks()
@@ -351,7 +386,7 @@ def main():
                     # score += 1
 
             # Render the game
-            render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, font)
+            render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font)
 
         elif game_state == "game_over":
             new_high_score = False
