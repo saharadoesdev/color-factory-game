@@ -328,7 +328,7 @@ def main():
                 else:
                     bin.is_active = False
 
-            if down_key_pressed and active_bin is not None:
+            if down_key_pressed and active_bin is not None and not player.is_stunned:
                 if player.held_color is not None:
                     if player.held_color == active_bin.color:
                         # Drop color in correct (matching) bin
@@ -372,6 +372,7 @@ def main():
                         sounds['hazard_hit'].play()
                         player.get_stunned()
                         combo_multiplier = 1    # Reset combo
+                        player.update_held_color(None)
                         falling_blobs.remove(blob)   
 
             # Render the game
