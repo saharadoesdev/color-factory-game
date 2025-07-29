@@ -24,9 +24,10 @@ SPAWNABLE_COLORS = ["RED", "BLUE", "YELLOW"]
 def initialize_game():
     pygame.init()
     pygame.mixer.init()
+    pygame.mixer.music.set_volume(0.7)
     window_size = (800, 600)
     window = pygame.display.set_mode(window_size)
-    pygame.display.set_caption('Falling Blob Game')
+    pygame.display.set_caption('Color Factory Frenzy!')
     return window
 
 def load_assets():
@@ -48,30 +49,6 @@ def load_assets():
         blob_images[color] = pygame.transform.smoothscale(original_image, (50, 50))
         indicator_images[color] = pygame.transform.smoothscale(original_image, (20, 20))
 
-    # Bins will temporarily use blob images until I replace them
-    # red_bin_image = pygame.image.load('assets/blobs/red_blob.png')
-    # red_bin_image = pygame.transform.scale(red_bin_image, (100, 100))
-
-    # yellow_bin_image = pygame.image.load('assets/blobs/yellow_blob.png')
-    # yellow_bin_image = pygame.transform.scale(yellow_bin_image, (100, 100))
-
-    # blue_bin_image = pygame.image.load('assets/blobs/blue_blob.png')
-    # blue_bin_image = pygame.transform.scale(blue_bin_image, (100, 100))
-
-    # orange_bin_image = pygame.image.load('assets/blobs/orange_blob.png')
-    # orange_bin_image = pygame.transform.scale(orange_bin_image, (100, 100))
-
-    # green_bin_image = pygame.image.load('assets/blobs/green_blob.png')
-    # green_bin_image = pygame.transform.scale(green_bin_image, (100, 100))
-
-    # purple_bin_image = pygame.image.load('assets/blobs/purple_blob.png')
-    # purple_bin_image = pygame.transform.scale(purple_bin_image, (100, 100))
-
-    # bin_images = {
-    #     "RED": red_bin_image, "YELLOW": yellow_bin_image, "BLUE": blue_bin_image,
-    #     "ORANGE": orange_bin_image, "GREEN": green_bin_image, "PURPLE": purple_bin_image
-    # }
-
     # Load bin images and add to dictionary
     bin_images = {}
     for color in COLORS.keys():
@@ -83,8 +60,18 @@ def load_assets():
     wrench_image = pygame.image.load('assets/wrench.png')
     wrench_image = pygame.transform.smoothscale(wrench_image, (50, 50))
 
+    # Load sound effects into a dictionary
+    sounds = {
+        'hazard_hit': pygame.mixer.Sound("assets/audio/hazard_hit.aif"), # metal10.aif
+        'clock_tick': pygame.mixer.Sound("assets/audio/clock_tick.wav"),
+        'catch_blob': pygame.mixer.Sound("assets/audio/catch_blob.ogg"),   #pop1.ogg
+        'correct_deposit': pygame.mixer.Sound("assets/audio/correct_deposit.wav"),   #coin01.aif (converted to wav)
+        'wrong_deposit': pygame.mixer.Sound("assets/audio/wrong_deposit.wav")   #Downer01.aif (converted to wav)
+    }
+    sounds['hazard_hit'].set_volume(0.4)
+
     # return background_image, player_image, [red_image, yellow_image, blue_image]
-    return background_image, start_menu_image, player_image, blob_images, indicator_images, bin_images, wrench_image
+    return background_image, start_menu_image, player_image, blob_images, indicator_images, bin_images, wrench_image, sounds
 
 def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
     x_position = random.randint(0, screen_width - 50)
@@ -299,7 +286,7 @@ def main():
     global game_state, missed_blobs    # added these
 
     window = initialize_game()
-    background_image, start_menu_image, player_image, blob_images, indicator_images, bin_images, wrench_image = load_assets()
+    background_image, start_menu_image, player_image, blob_images, indicator_images, bin_images, wrench_image, sounds = load_assets()
 
     # player_position = [350, 500]
     # player_speed = 5
@@ -332,9 +319,10 @@ def main():
     # Set up timer
     # start_time = pygame.time.get_ticks()
     game_duration = 30000   # 30 seconds, make longer later
+    last_tick_second = -1
 
     # Start music on infinite loop
-    pygame.mixer.music.load("assets/audio/background_music.wav")
+    pygame.mixer.music.load("assets/audio/menu_music.mp3")
     pygame.mixer.music.play(loops=-1)
 
     running = True
@@ -344,6 +332,8 @@ def main():
         if game_state == "start_menu":
             render_start_menu(window, start_menu_image)
             if start_game:
+                pygame.mixer.music.load("assets/audio/background_music.wav")
+                pygame.mixer.music.play(loops=-1)  
                 start_time = pygame.time.get_ticks()
                 game_state = "playing"
         elif game_state == "playing":
@@ -351,6 +341,11 @@ def main():
             elapsed_time = pygame.time.get_ticks() - start_time
             time_left = (game_duration - elapsed_time) // 1000
             # print(time_left)
+
+            # Check if last 10 seconds and play sound (if one hasn't already played for this second)
+            if time_left <= 10 and time_left != last_tick_second:
+                sounds['clock_tick'].play()
+                last_tick_second = time_left
         
             if time_left <= 0:
                 game_state = "game_over"
@@ -369,12 +364,14 @@ def main():
                 if player.held_color == clicked_bin_color:   # or player.held_color in MIX_RULES[clicked_bin_color].values():
                     # Drop color in matching bin // OLD: or parent primary color bin (ex., purple can go in red or blue)
                     # print("Correct!")
+                    sounds['correct_deposit'].play()
                     if clicked_bin_color in SPAWNABLE_COLORS:   # Primary colors aren't worth as many points
                         score += 100 * combo_multiplier
                     else:
                         score += 500 * combo_multiplier
                     combo_multiplier = 5 if combo_multiplier == 5 else combo_multiplier + 1  # Max combo multiplier is 5x
                 elif player.held_color is not None:   # If color dropped in wrong bin, reset combo
+                    sounds['wrong_deposit'].play()
                     combo_multiplier = 1
                 player.update_held_color(None)
 
@@ -398,8 +395,10 @@ def main():
                 if check_collision([player.x,player.y], [blob.x, blob.y]):
                     falling_blobs.remove(blob)
                     if isinstance(blob, Blob):  # This will be more refined later probably haha
+                        sounds['catch_blob'].play()
                         player.update_held_color(blob.color)
                     else:   # Hazard, so stun
+                        sounds['hazard_hit'].play()
                         player.get_stunned()
                         combo_multiplier = 1    # Reset combo
                     # score += 1
