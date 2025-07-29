@@ -92,7 +92,7 @@ def load_assets():
 
     return background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, pipe_images, sounds
 
-def spawn_object(falling_objects, blob_images, hazard_image, hazard_chance, base_fall_speed):
+def spawn_object(falling_objects, blob_images, hazard_image, hazard_chance, malfunction_chance, base_fall_speed):
     # x_position = random.randint(0, screen_width - 50)
     # y_position = 0
     if random.random() < hazard_chance:
@@ -100,7 +100,10 @@ def spawn_object(falling_objects, blob_images, hazard_image, hazard_chance, base
         falling_objects.append(Hazard(spawn_pos[0], spawn_pos[1], hazard_image, base_fall_speed))
     else:   # Spawn blob
         color_to_spawn = random.choice(SPAWNABLE_COLORS)    # Choose blob color randomly
-        spawn_pos = SPAWN_POSITIONS[color_to_spawn]
+        if random.random() < malfunction_chance:    # Malfunction means blob spawns in wrong pipe
+            spawn_pos = random.choice(list(SPAWN_POSITIONS.values()))
+        else:
+            spawn_pos = SPAWN_POSITIONS[color_to_spawn]
         falling_objects.append(Blob(spawn_pos[0], spawn_pos[1], blob_images[color_to_spawn], color_to_spawn, base_fall_speed)) # Create and spawn new blob
 
 def move_objects(falling_objects):
@@ -274,6 +277,7 @@ def main():
     min_spawn_delay = 800
     max_spawn_delay = 1500
     hazard_chance = 0.15
+    malfunction_chance = 0.15
     base_fall_speed = 4
     spawn_timer = 0
     spawn_delay = 0
@@ -325,6 +329,7 @@ def main():
                     min_spawn_delay = phase["min_spawn_delay"]
                     max_spawn_delay = phase["max_spawn_delay"]
                     hazard_chance = phase["hazard_chance"]
+                    malfunction_chance = phase["malfunction_chance"]
                     base_fall_speed = phase["base_fall_speed"]
                     break
 
@@ -364,14 +369,14 @@ def main():
                             score += SECONDARY_SCORE * combo_multiplier * bonus_multiplier
 
                         combo_multiplier = min(combo_multiplier + 1, MAX_COMBO)  # Max combo multiplier is 5x
-                    elif player.held_color is not None:   # If color dropped in wrong bin, reset combo
+                    else:   # If color dropped in wrong bin, reset combo
                         sounds['wrong_deposit'].play()
                         combo_multiplier = 1
                     player.update_held_color(None)
 
             # Spawn objects periodically
             if pygame.time.get_ticks() - spawn_timer > spawn_delay:
-              spawn_object(falling_objects, blob_images, wrench_image, hazard_chance, base_fall_speed)
+              spawn_object(falling_objects, blob_images, wrench_image, hazard_chance, malfunction_chance, base_fall_speed)
               spawn_timer = pygame.time.get_ticks()
               spawn_delay = random.randint(min_spawn_delay, max_spawn_delay)
             

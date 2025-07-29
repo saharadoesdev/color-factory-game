@@ -51,6 +51,7 @@ PHASES = [
         "max_spawn_delay": 1500,
         "hazard_chance": 0.15,
         "base_fall_speed": 3.5,
+        "malfunction_chance": 0.15
     },
     {
         "time_left": (GAME_DURATION // 1000) // 3,  # phase starts when 30 < time_left <= 60
@@ -58,6 +59,7 @@ PHASES = [
         "max_spawn_delay": 1000,
         "hazard_chance": 0.20,
         "base_fall_speed": 4,
+        "malfunction_chance": 0.25
     },
     {
         "time_left": 0,  # phase starts when 30 < time_left <= 60
@@ -65,5 +67,6 @@ PHASES = [
         "max_spawn_delay": 700,
         "hazard_chance": 0.25,
         "base_fall_speed": 4.5,
+        "malfunction_chance": 0.35
     }
 ]
