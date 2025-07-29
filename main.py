@@ -369,7 +369,10 @@ def main():
                 if player.held_color == clicked_bin_color:   # or player.held_color in MIX_RULES[clicked_bin_color].values():
                     # Drop color in matching bin // OLD: or parent primary color bin (ex., purple can go in red or blue)
                     # print("Correct!")
-                    score += 10 * combo_multiplier
+                    if clicked_bin_color in SPAWNABLE_COLORS:   # Primary colors aren't worth as many points
+                        score += 100 * combo_multiplier
+                    else:
+                        score += 500 * combo_multiplier
                     combo_multiplier = 5 if combo_multiplier == 5 else combo_multiplier + 1  # Max combo multiplier is 5x
                 elif player.held_color is not None:   # If color dropped in wrong bin, reset combo
                     combo_multiplier = 1
