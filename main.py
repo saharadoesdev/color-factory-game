@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from classes.player import Player
 from classes.blob import Blob
 from classes.bin import Bin
@@ -168,7 +169,13 @@ def render_game(window, background_image, indicator_images, player, falling_blob
         window.blit(blob.image, blob.rect)
 
     for bin in bins:
-        window.blit(bin.image, bin.rect)
+        if bin.has_bonus:   # Pulsing effect, render both normal and glow
+            window.blit(bin.normal_image, bin.rect)
+            window.blit(bin.glow_image, bin.rect)
+        elif bin.is_active: # Bin doesn't have bonus but could be glowing for active
+            window.blit(bin.glow_image, bin.rect)
+        else:
+            window.blit(bin.normal_image, bin.rect)
         # Render an indicator image label on top of each bin
         bin_label_pos = (bin.rect.x + (bin.image.get_width() // 2) - 8, bin.rect.y + (bin.image.get_height() // 2) - 10)  # Center position
         window.blit(indicator_images[bin.color], bin_label_pos)
@@ -248,6 +255,7 @@ def main():
     screen_height = 600
     falling_blobs = []
     spawn_timer = 0
+    bin_bonus_timer = pygame.time.get_ticks() + 4000    # First bonus will appear 4 seconds in    
     score = 0
     high_score = 0
     combo_multiplier = 1
@@ -260,6 +268,7 @@ def main():
     blue_bin = Bin(551, 500, bin_images["BLUE"], "BLUE")
     purple_bin = Bin(675, 500, bin_images["PURPLE"], "PURPLE")
     bins = [red_bin, orange_bin,yellow_bin, green_bin, blue_bin, purple_bin]
+
 
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
@@ -304,24 +313,29 @@ def main():
             # Update player position
             player.move(move_left, move_right)
 
-            # Determine which bin should be active
+            # Determine which bin should be active based on proximity, also update bins
             active_bin = None
             for bin in bins:
+                bin.update()
                 if player.rect.colliderect(bin.activation_zone):
                     active_bin = bin
-                    bin.activate()
+                    bin.is_active = True
                 else:
-                    bin.deactivate()
+                    bin.is_active = False
 
             if down_key_pressed and active_bin is not None:
                 if player.held_color is not None:
                     if player.held_color == active_bin.color:
                         # Drop color in correct (matching) bin
                         sounds['correct_deposit'].play()
+
+                        # Calculate score for drop
+                        bonus_multiplier = 2 if active_bin.has_bonus else 1  # Check if bonus is active on that bin
                         if active_bin.color in SPAWNABLE_COLORS:   # Primary colors aren't worth as many points
-                            score += 100 * combo_multiplier
+                            score += 100 * combo_multiplier * bonus_multiplier
                         else:       # Secondary (mixed) colors are worth more points
-                            score += 500 * combo_multiplier
+                            score += 500 * combo_multiplier * bonus_multiplier
+
                         combo_multiplier = 5 if combo_multiplier == 5 else combo_multiplier + 1  # Max combo multiplier is 5x
                     elif player.held_color is not None:   # If color dropped in wrong bin, reset combo
                         sounds['wrong_deposit'].play()
@@ -333,6 +347,11 @@ def main():
             if spawn_timer > 50:    # Originally 30
               spawn_blob(falling_blobs, blob_images, wrench_image, screen_width)
               spawn_timer = 0
+            
+            # Activate bins periodically with bonuses
+            if pygame.time.get_ticks() > bin_bonus_timer:
+              random.choice(bins).start_bonus()
+              bin_bonus_timer = pygame.time.get_ticks() + random.randint(13000,15000)    # Next bonus in 13-15 seconds (10 second long bonuses)
 
             move_blobs(falling_blobs, screen_height)
 
