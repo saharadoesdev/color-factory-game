@@ -1,15 +1,10 @@
 import pygame
-
-MIX_RULES = {
-    "RED": {"BLUE": "PURPLE", "YELLOW": "ORANGE"},
-    "BLUE": {"RED": "PURPLE", "YELLOW": "GREEN"},
-    "YELLOW": {"RED": "ORANGE", "BLUE": "GREEN"}
-}
+from settings import MIX_RULES, PLAYER_SPEED, PLAYER_ANIMATION_SPEED, PLAYER_STUN_DURATION
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, images):
         super().__init__()
-        self.speed = 8
+        self.speed = PLAYER_SPEED
         self.images = images
         self.held_color = None
         self.is_stunned = False
@@ -20,7 +15,7 @@ class Player(pygame.sprite.Sprite):
         self.current_frame = 0
         self.image = images[self.action][self.current_frame]
         self.last_update_time = pygame.time.get_ticks()
-        self.animation_speed = 50   # ms per frame
+        self.animation_speed = PLAYER_ANIMATION_SPEED   # ms per frame
 
         self.rect = self.image.get_rect(topleft=(x, y))   # For collision checking
 
@@ -67,6 +62,6 @@ class Player(pygame.sprite.Sprite):
         # If player catches the color they're already holding, or an impossible mix, nothing happens
         return False
 
-    def get_stunned(self, duration=1200):   # 1.2 seconds
+    def get_stunned(self):   # 1.2 seconds
         self.is_stunned = True
-        self.stun_end_time = pygame.time.get_ticks() + duration
+        self.stun_end_time = pygame.time.get_ticks() + PLAYER_STUN_DURATION

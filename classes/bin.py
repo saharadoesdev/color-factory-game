@@ -1,5 +1,6 @@
 import pygame
 import math
+from settings import BONUS_DURATION
 
 class Bin(pygame.sprite.Sprite):
     def __init__(self, x, y, image, color):
@@ -11,7 +12,7 @@ class Bin(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=(x, y))   # For collision checking
         self.activation_zone = self.rect.inflate(-10,40)
         
-        self.bonus_duration = 10000 # 10 seconds in milliseconds
+        self.bonus_duration = BONUS_DURATION # 10 seconds in milliseconds
         self.bonus_end_time = 0
         self.has_bonus = False
         self.is_active = False

@@ -4,21 +4,12 @@ from classes.player import Player
 from classes.blob import Blob
 from classes.bin import Bin
 from classes.hazard import Hazard
-
-game_state = "start_menu"  # The initial game state
-
-COLORS = {
-    "RED": (255, 0, 0),
-    "YELLOW": (255, 255, 0),
-    "BLUE": (0, 0, 255),
-    "ORANGE": (255, 165, 0),
-    "GREEN": (0, 255, 0),
-    "PURPLE": (128, 0, 128),
-}
-
-SPAWNABLE_COLORS = ["RED", "BLUE", "YELLOW"]
-
-SPAWN_POSITIONS = {"RED": (115, 0), "YELLOW": (375, 0), "BLUE": (627, 0)}   # approx: x of pipe + pipe width // 2 - blob width // 2
+from settings import (
+    WINDOW_WIDTH, WINDOW_HEIGHT, GAME_TITLE,
+    COLORS, SPAWNABLE_COLORS, SPAWN_POSITIONS,
+    GAME_DURATION, HAZARD_CHANCE,
+    PRIMARY_SCORE, SECONDARY_SCORE, MAX_COMBO, BONUS_MULTIPLIER
+)
 
 def initialize_game():
     pygame.init()
@@ -26,7 +17,7 @@ def initialize_game():
     pygame.mixer.music.set_volume(0.7)
     window_size = (800, 600)
     window = pygame.display.set_mode(window_size)
-    pygame.display.set_caption('Color Factory Frenzy!')
+    pygame.display.set_caption(GAME_TITLE)
     return window
 
 def load_assets():
@@ -104,7 +95,7 @@ def load_assets():
 def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
     # x_position = random.randint(0, screen_width - 50)
     # y_position = 0
-    if random.random() < 0.20:  # Adjust value - HAZARD_CHANCE
+    if random.random() < HAZARD_CHANCE:
         spawn_pos = random.choice(list(SPAWN_POSITIONS.values()))
         falling_blobs.append(Hazard(spawn_pos[0], spawn_pos[1], hazard_image))
     else:   # Spawn blob
@@ -210,12 +201,11 @@ def render_game_over(window, font, new_high_score):
     restart_text = font.render("Press R to Restart", True, (255, 255, 255))  # White text
 
     # Center the text on the screen
-    window_width, window_height = window.get_size()
     if new_high_score:
         high_score_text = font.render("New High Score!", True, (255, 255, 0))  # Yellow text
-        window.blit(high_score_text, (window_width // 2 - high_score_text.get_width() // 2, window_height // 2 - 110))
-    window.blit(game_over_text, (window_width // 2 - game_over_text.get_width() // 2, window_height // 2 - 50))
-    window.blit(restart_text, (window_width // 2 - restart_text.get_width() // 2, window_height // 2 + 10))
+        window.blit(high_score_text, (WINDOW_WIDTH // 2 - high_score_text.get_width() // 2, WINDOW_HEIGHT // 2 - 110))
+    window.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, WINDOW_HEIGHT // 2 - 50))
+    window.blit(restart_text, (WINDOW_WIDTH // 2 - restart_text.get_width() // 2, WINDOW_HEIGHT // 2 + 10))
     pygame.display.flip()
 
 def render_start_menu(window, start_menu_image):
@@ -291,13 +281,14 @@ def main():
     plus_sign = font.render("+", True, (255,255,255))
     equals_sign = font.render("=", True, (255,255,255))
     
-    # Set up timer and clock ticks
-    game_duration = 60000   # 60 seconds
+    # Set up for clock ticks
     last_tick_second = -1
 
     # Start music on infinite loop
     pygame.mixer.music.load("assets/audio/menu_music.mp3")
     pygame.mixer.music.play(loops=-1)
+
+    game_state = "start_menu"  # The initial game state
 
     running = True
     while running:
@@ -313,7 +304,7 @@ def main():
         elif game_state == "playing":
             # Check timer
             elapsed_time = pygame.time.get_ticks() - start_time
-            time_left = (game_duration - elapsed_time) // 1000
+            time_left = (GAME_DURATION - elapsed_time) // 1000
 
             # Check if last 10 seconds and play sound (if one hasn't already played for this second)
             if time_left <= 10 and time_left != last_tick_second:
@@ -344,13 +335,13 @@ def main():
                         sounds['correct_deposit'].play()
 
                         # Calculate score for drop
-                        bonus_multiplier = 2 if active_bin.has_bonus else 1  # Check if bonus is active on that bin
+                        bonus_multiplier = BONUS_MULTIPLIER if active_bin.has_bonus else 1  # Check if bonus is active on that bin
                         if active_bin.color in SPAWNABLE_COLORS:   # Primary colors aren't worth as many points
-                            score += 100 * combo_multiplier * bonus_multiplier
+                            score += PRIMARY_SCORE * combo_multiplier * bonus_multiplier
                         else:       # Secondary (mixed) colors are worth more points
-                            score += 500 * combo_multiplier * bonus_multiplier
+                            score += SECONDARY_SCORE * combo_multiplier * bonus_multiplier
 
-                        combo_multiplier = 5 if combo_multiplier == 5 else combo_multiplier + 1  # Max combo multiplier is 5x
+                        combo_multiplier = min(combo_multiplier + 1, MAX_COMBO)  # Max combo multiplier is 5x
                     elif player.held_color is not None:   # If color dropped in wrong bin, reset combo
                         sounds['wrong_deposit'].play()
                         combo_multiplier = 1
@@ -400,6 +391,7 @@ def main():
                 player.update_held_color(None)
                 combo_multiplier = 1
                 start_time = pygame.time.get_ticks()    # Reset timer
+                bin_bonus_timer = start_time + 4000
                 game_state = "playing"
 
         clock.tick(60)
