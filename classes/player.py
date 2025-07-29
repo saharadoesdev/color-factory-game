@@ -55,13 +55,17 @@ class Player(pygame.sprite.Sprite):
             self.image = self.images[self.action][self.current_frame]
 
     def update_held_color(self, new_color):
+        """Returns True if color changes updates to a non-None value, False otherwise."""
         if new_color == None:   # Clear held color
             self.held_color = None
         elif self.held_color == None:
             self.held_color = new_color
+            return True
         elif self.held_color in MIX_RULES and new_color in MIX_RULES[self.held_color]:  # Mix colors based on MIX_RULES
             self.held_color = MIX_RULES[self.held_color][new_color]
+            return True
         # If player catches the color they're already holding, or an impossible mix, nothing happens
+        return False
 
     def get_stunned(self, duration=1200):   # 1.2 seconds
         self.is_stunned = True

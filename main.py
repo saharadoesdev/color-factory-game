@@ -338,15 +338,17 @@ def main():
 
             # Check for collisions
             for blob in falling_blobs[:]:
-                if player.rect.colliderect(blob.rect): # check_collision([player.x,player.y], [blob.x, blob.y]):
-                    falling_blobs.remove(blob)
-                    if isinstance(blob, Blob):  # If it's a blob, catch it
-                        sounds['catch_blob'].play()
-                        player.update_held_color(blob.color)
-                    else:   # Hazard, so stun
+                if player.rect.colliderect(blob.rect):
+                    if isinstance(blob, Blob):  # If touching blob, try to catch it
+                        if player.update_held_color(blob.color):    # If color successfully changes (blob is caught)
+                            sounds['catch_blob'].play()
+                            falling_blobs.remove(blob)
+                        # Else, not catchable, so nothing happens - blobs falls down screen
+                    else:   # Hazard
                         sounds['hazard_hit'].play()
                         player.get_stunned()
                         combo_multiplier = 1    # Reset combo
+                        falling_blobs.remove(blob)   
 
             # Render the game
             render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font)
