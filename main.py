@@ -107,22 +107,6 @@ def move_blobs(falling_blobs, window_height):
         blob.move()
     falling_blobs[:] = [blob for blob in falling_blobs if blob.rect.y <= window_height]  # Remove off-screen blobs
 
-# def check_collision(player_position, blob_position):
-#     basket_x, basket_y = player_position
-#     blob_x, blob_y = blob_position
-
-#     basket_width = 100
-#     basket_height = 100
-#     blob_width = 50
-#     blob_height = 50
-
-#     if (blob_x < basket_x + basket_width and
-#         blob_x + blob_width > basket_x and
-#         blob_y < basket_y + basket_height and
-#         blob_y + blob_height > basket_y):
-#         return True
-#     return False
-
 def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font):
     ui_bar = pygame.Surface((800, 50), pygame.SRCALPHA) 
     ui_bar.fill((0, 0, 0, 150)) # Transparent black
@@ -223,18 +207,17 @@ def handle_events(game_state, bins):
     - move_left: Whether the player is moving left.
     - move_right: Whether the player is moving right.
     """
-    move_left = move_right = restart = start_game = False
-    clicked_bin_color = None
+    move_left = move_right = restart = start_game = down_key_pressed = False
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            return False, start_game, restart, move_left, move_right, clicked_bin_color
+            return False, start_game, restart, move_left, move_right, down_key_pressed
         
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Check for left mouse click
-            for bin in bins:
-                if bin.rect.collidepoint(event.pos):
-                    clicked_bin_color = bin.color
-                    break   # stop checking once clicked bin is found
+        # if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Check for left mouse click
+        #     for bin in bins:
+        #         if bin.rect.collidepoint(event.pos):
+        #             clicked_bin_color = bin.color
+        #             break   # stop checking once clicked bin is found
 
     keys = pygame.key.get_pressed()
     if game_state == "start_menu" and any(keys):
@@ -242,10 +225,11 @@ def handle_events(game_state, bins):
     if game_state == "playing":
         move_left = keys[pygame.K_LEFT]
         move_right = keys[pygame.K_RIGHT]
+        down_key_pressed = keys[pygame.K_DOWN]
     elif game_state == "game_over" and keys[pygame.K_r]:
         restart = True
 
-    return True, start_game, restart, move_left, move_right, clicked_bin_color
+    return True, start_game, restart, move_left, move_right, down_key_pressed
 
 def main():
     global game_state
@@ -288,7 +272,7 @@ def main():
 
     running = True
     while running:
-        running, start_game, restart, move_left, move_right, clicked_bin_color = handle_events(game_state, bins)
+        running, start_game, restart, move_left, move_right, down_key_pressed = handle_events(game_state, bins)
 
         if game_state == "start_menu":
             render_start_menu(window, start_menu_image)
@@ -320,19 +304,20 @@ def main():
                 if player.rect.colliderect(bin.activation_zone):
                     active_bin = bin
 
-            if clicked_bin_color is not None and active_bin is not None and clicked_bin_color == active_bin.color:
-                if player.held_color == clicked_bin_color:
-                    # Drop color in correct (matching) bin
-                    sounds['correct_deposit'].play()
-                    if clicked_bin_color in SPAWNABLE_COLORS:   # Primary colors aren't worth as many points
-                        score += 100 * combo_multiplier
-                    else:       # Secondary (mixed) colors are worth more points
-                        score += 500 * combo_multiplier
-                    combo_multiplier = 5 if combo_multiplier == 5 else combo_multiplier + 1  # Max combo multiplier is 5x
-                elif player.held_color is not None:   # If color dropped in wrong bin, reset combo
-                    sounds['wrong_deposit'].play()
-                    combo_multiplier = 1
-                player.update_held_color(None)
+            if down_key_pressed and active_bin is not None:
+                if player.held_color is not None:
+                    if player.held_color == active_bin.color:
+                        # Drop color in correct (matching) bin
+                        sounds['correct_deposit'].play()
+                        if active_bin.color in SPAWNABLE_COLORS:   # Primary colors aren't worth as many points
+                            score += 100 * combo_multiplier
+                        else:       # Secondary (mixed) colors are worth more points
+                            score += 500 * combo_multiplier
+                        combo_multiplier = 5 if combo_multiplier == 5 else combo_multiplier + 1  # Max combo multiplier is 5x
+                    elif player.held_color is not None:   # If color dropped in wrong bin, reset combo
+                        sounds['wrong_deposit'].play()
+                        combo_multiplier = 1
+                    player.update_held_color(None)
 
             # Spawn blobs periodically
             spawn_timer += 1
