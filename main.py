@@ -18,6 +18,8 @@ COLORS = {
 
 SPAWNABLE_COLORS = ["RED", "BLUE", "YELLOW"]
 
+SPAWN_POSITIONS = {"RED": (115, 0), "YELLOW": (375, 0), "BLUE": (627, 0)}   # approx: x of pipe + pipe width // 2 - blob width // 2
+
 def initialize_game():
     pygame.init()
     pygame.mixer.init()
@@ -100,13 +102,15 @@ def load_assets():
     return background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, pipe_images, sounds
 
 def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
-    x_position = random.randint(0, screen_width - 50)
-    y_position = 0
+    # x_position = random.randint(0, screen_width - 50)
+    # y_position = 0
     if random.random() < 0.20:  # Adjust value - HAZARD_CHANCE
-        falling_blobs.append(Hazard(x_position, y_position, hazard_image))
+        spawn_pos = random.choice(list(SPAWN_POSITIONS.values()))
+        falling_blobs.append(Hazard(spawn_pos[0], spawn_pos[1], hazard_image))
     else:   # Spawn blob
         color_to_spawn = random.choice(SPAWNABLE_COLORS)    # Choose blob color randomly
-        falling_blobs.append(Blob(x_position, y_position, blob_images[color_to_spawn], color_to_spawn)) # Create and spawn new blob
+        spawn_pos = SPAWN_POSITIONS[color_to_spawn]
+        falling_blobs.append(Blob(spawn_pos[0], spawn_pos[1], blob_images[color_to_spawn], color_to_spawn)) # Create and spawn new blob
 
 def move_blobs(falling_blobs, window_height):
     """
@@ -175,9 +179,9 @@ def render_game(window, background_image, pipe_images, indicator_images, player,
         window.blit(blob.image, blob.rect)
 
     # Render pipes at top (over blobs, under UI)
-    window.blit(pipe_images[0], (76,-117))      # Red
-    window.blit(pipe_images[1], (336,-117))    # Yellow
-    window.blit(pipe_images[2], (587,-117))    # Blue
+    window.blit(pipe_images[0], (76,-125))  # Red
+    window.blit(pipe_images[1], (336,-125)) # Yellow
+    window.blit(pipe_images[2], (587,-125)) # Blue
 
     for bin in bins:
         if bin.has_bonus:   # Pulsing effect, render both normal and glow
