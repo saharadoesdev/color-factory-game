@@ -6,3 +6,5 @@ class Bin(pygame.sprite.Sprite):
         self.image = image
         self.color = color  # `color` is string in all-capital letters, ex. "RED"
         self.rect = self.image.get_rect(topleft=(x, y))   # For collision checking
+        self.activation_zone = self.rect.inflate(0,40)
+        self.activation_zone.center = self.rect.center

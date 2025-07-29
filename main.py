@@ -314,7 +314,13 @@ def main():
             # Update player position
             player.move(move_left, move_right)
 
-            if clicked_bin_color is not None:
+            # Determine which bin should be active
+            active_bin = None
+            for bin in bins:
+                if player.rect.colliderect(bin.activation_zone):
+                    active_bin = bin
+
+            if clicked_bin_color is not None and active_bin is not None and clicked_bin_color == active_bin.color:
                 if player.held_color == clicked_bin_color:
                     # Drop color in correct (matching) bin
                     sounds['correct_deposit'].play()
