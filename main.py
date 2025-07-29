@@ -92,28 +92,28 @@ def load_assets():
 
     return background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, pipe_images, sounds
 
-def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
+def spawn_object(falling_objects, blob_images, hazard_image, screen_width):
     # x_position = random.randint(0, screen_width - 50)
     # y_position = 0
     if random.random() < HAZARD_CHANCE:
         spawn_pos = random.choice(list(SPAWN_POSITIONS.values()))
-        falling_blobs.append(Hazard(spawn_pos[0], spawn_pos[1], hazard_image))
+        falling_objects.append(Hazard(spawn_pos[0], spawn_pos[1], hazard_image))
     else:   # Spawn blob
         color_to_spawn = random.choice(SPAWNABLE_COLORS)    # Choose blob color randomly
         spawn_pos = SPAWN_POSITIONS[color_to_spawn]
-        falling_blobs.append(Blob(spawn_pos[0], spawn_pos[1], blob_images[color_to_spawn], color_to_spawn)) # Create and spawn new blob
+        falling_objects.append(Blob(spawn_pos[0], spawn_pos[1], blob_images[color_to_spawn], color_to_spawn)) # Create and spawn new blob
 
-def move_blobs(falling_blobs, window_height):
+def move_blobs(falling_objects, window_height):
     """
-    Moves blobs downward and removes missed blobs.
+    Moves objects (blobs, hazards) downward and removes missed objects.
 
     Parameters:
-    - falling_blobs: List of blobs currently falling.
+    - falling_objects: List of objects currently falling.
     - window_height: The height of the game window.
     """
-    for blob in falling_blobs:
-        blob.move()
-    falling_blobs[:] = [blob for blob in falling_blobs if blob.rect.y <= window_height]  # Remove off-screen blobs
+    for object in falling_objects:
+        object.move()
+    falling_objects[:] = [object for object in falling_objects if object.rect.y <= window_height]  # Remove off-screen blobs
 
 def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font):
     ui_bar = pygame.Surface((800, 50), pygame.SRCALPHA) 
@@ -155,7 +155,7 @@ def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus
     window.blit(equals_sign, (start_x + 64, start_y - 3))
     window.blit(indicator_images["PURPLE"], (start_x + 84, start_y))
 
-def render_game(window, background_image, pipe_images, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font):
+def render_game(window, background_image, pipe_images, indicator_images, player, falling_objects, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font):
     window.fill((0, 43, 34))    # Fill lower area with darkest blue-green from background
     window.blit(background_image, (0, 0))
 
@@ -166,8 +166,8 @@ def render_game(window, background_image, pipe_images, indicator_images, player,
         indicator_pos = (player.rect.x + (player.image.get_width() // 2) - 10, player.rect.y - 10) # Calculate indicator image's position
         window.blit(indicator_images[player.held_color], indicator_pos)
 
-    for blob in falling_blobs:
-        window.blit(blob.image, blob.rect)
+    for object in falling_objects:
+        window.blit(object.image, object.rect)
 
     # Render pipes at top (over blobs, under UI)
     window.blit(pipe_images[0], (76,-125))  # Red
@@ -258,9 +258,10 @@ def main():
     player = Player(400 - (player_images['idle'][0].get_width() // 2), 388, player_images)   # Center the player
     screen_width = 800
     screen_height = 600
-    falling_blobs = []
+    falling_objects = []
     spawn_timer = 0
-    bin_bonus_timer = pygame.time.get_ticks() + 4000    # First bonus will appear 4 seconds in    
+    spawn_delay = 0
+    bin_bonus_timer = 0    
     score = 0
     high_score = 0
     combo_multiplier = 1
@@ -300,6 +301,7 @@ def main():
                 pygame.mixer.music.load("assets/audio/background_music.wav")
                 pygame.mixer.music.play(loops=-1)  
                 start_time = pygame.time.get_ticks()
+                bin_bonus_timer = start_time + 4000    # First bonus will appear 4 seconds in
                 game_state = "playing"
         elif game_state == "playing":
             # Check timer
@@ -348,35 +350,35 @@ def main():
                     player.update_held_color(None)
 
             # Spawn blobs periodically
-            spawn_timer += 1
-            if spawn_timer > 50:    # Originally 30
-              spawn_blob(falling_blobs, blob_images, wrench_image, screen_width)
-              spawn_timer = 0
+            if pygame.time.get_ticks() - spawn_timer > spawn_delay:
+              spawn_object(falling_objects, blob_images, wrench_image, screen_width)
+              spawn_timer = pygame.time.get_ticks()
+              spawn_delay = random.randint(800, 1500)
             
             # Activate bins periodically with bonuses
             if pygame.time.get_ticks() > bin_bonus_timer:
               random.choice(bins).start_bonus()
               bin_bonus_timer = pygame.time.get_ticks() + random.randint(13000,15000)    # Next bonus in 13-15 seconds (10 second long bonuses)
 
-            move_blobs(falling_blobs, screen_height)
+            move_blobs(falling_objects, screen_height)
 
             # Check for collisions
-            for blob in falling_blobs[:]:
-                if player.rect.colliderect(blob.rect):
-                    if isinstance(blob, Blob):  # If touching blob, try to catch it
-                        if player.update_held_color(blob.color):    # If color successfully changes (blob is caught)
+            for object in falling_objects[:]:
+                if player.rect.colliderect(object.rect):
+                    if isinstance(object, Blob):  # If touching blob, try to catch it
+                        if player.update_held_color(object.color):    # If color successfully changes (blob is caught)
                             sounds['catch_blob'].play()
-                            falling_blobs.remove(blob)
+                            falling_objects.remove(object)
                         # Else, not catchable, so nothing happens - blobs falls down screen
                     else:   # Hazard
                         sounds['hazard_hit'].play()
                         player.get_stunned()
                         combo_multiplier = 1    # Reset combo
                         player.update_held_color(None)
-                        falling_blobs.remove(blob)   
+                        falling_objects.remove(object)   
 
             # Render the game
-            render_game(window, background_image, pipe_images, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font)
+            render_game(window, background_image, pipe_images, indicator_images, player, falling_objects, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font)
 
         elif game_state == "game_over":
             new_high_score = False
@@ -387,7 +389,7 @@ def main():
 
             # Handle restart
             if restart:
-                falling_blobs = []
+                falling_objects = []
                 score = 0
                 player.update_held_color(None)
                 combo_multiplier = 1
