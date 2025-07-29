@@ -123,14 +123,14 @@ def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus
     ui_bar.fill((0, 0, 0, 150)) # Transparent black
     window.blit(ui_bar, (0, 0))
 
-    score_text = font.render(f"Score: {score}", True, (255,255,255))
-    window.blit(score_text, (15, 15))
+    score_text = font.render(f"SCORE: {score}", True, (255,255,255))
+    window.blit(score_text, (15, 11))
 
-    combo_text = font.render(f"Combo: {combo_multiplier}x", True, (255,255,255))
-    window.blit(combo_text, (540, 15))
+    combo_text = font.render(f"COMBO: {combo_multiplier}x", True, (255,255,255))
+    window.blit(combo_text, (540, 11))
 
-    timer_text = font.render(f"Time: {time_left}", True, (255,255,255))
-    window.blit(timer_text, (685, 15))
+    timer_text = font.render(f"TIME: {time_left}", True, (255,255,255))
+    window.blit(timer_text, (685, 11))
 
     # Display possible color combinations (like a recipe book):
     start_x = 175 
@@ -192,7 +192,7 @@ def render_game(window, background_image, pipe_images, indicator_images, player,
     render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font)
     pygame.display.flip()
 
-def render_game_over(window, font, new_high_score):
+def render_game_over(window, font_path, score, high_score, new_high_score):
     """
     Displays the game-over screen.
 
@@ -200,15 +200,31 @@ def render_game_over(window, font, new_high_score):
     - window: The game window.
     - font: The font object for rendering text.
     """
-    game_over_text = font.render("Game Over", True, (255, 0, 0))  # Red text
-    restart_text = font.render("Press R to Restart", True, (255, 255, 255))  # White text
+    # Transparent black overlay underneath
+    overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 180))
+    window.blit(overlay, (0, 0))
 
-    # Center the text on the screen
+    title_font = pygame.font.Font(font_path, 72)
+    game_over_text = title_font.render("Game Over", True, (255, 45, 45))   # Red text 
+    window.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 90))
+
+    score_font = pygame.font.Font(font_path, 42)
+    score_text = score_font.render(f"Score: {score}", True, (255, 255, 0))  # Yellow text
+    window.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 230))
+
+    high_score_text = score_font.render(f"High Score: {high_score}", True, (255, 255, 255)) # White text
+    window.blit(high_score_text, (WINDOW_WIDTH // 2 - high_score_text.get_width() // 2, 290))
+
     if new_high_score:
-        high_score_text = font.render("New High Score!", True, (255, 255, 0))  # Yellow text
-        window.blit(high_score_text, (WINDOW_WIDTH // 2 - high_score_text.get_width() // 2, WINDOW_HEIGHT // 2 - 110))
-    window.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, WINDOW_HEIGHT // 2 - 50))
-    window.blit(restart_text, (WINDOW_WIDTH // 2 - restart_text.get_width() // 2, WINDOW_HEIGHT // 2 + 10))
+        banner_font = pygame.font.Font(font_path, 32)
+        banner_text = banner_font.render("New High Score!", True, (255, 215, 0))    # Darker yellow text
+        window.blit(banner_text, (WINDOW_WIDTH // 2 - banner_text.get_width() // 2, 350))
+
+    prompt_font = pygame.font.Font(font_path, 30)
+    restart_text = prompt_font.render("Press R to Restart or ESC to Quit", True, (255, 255, 255))   # White text
+    window.blit(restart_text, (WINDOW_WIDTH // 2 - restart_text.get_width() // 2, 460))
+
     pygame.display.flip()
 
 def render_start_menu(window, start_menu_image):
@@ -241,7 +257,9 @@ def handle_events(game_state, bins):
         #             break   # stop checking once clicked bin is found
 
     keys = pygame.key.get_pressed()
-    if game_state == "start_menu" and any(keys):
+    if keys[pygame.K_ESCAPE]:
+        return False, start_game, restart, move_left, move_right, down_key_pressed
+    elif game_state == "start_menu" and any(keys):
         start_game = True
     if game_state == "playing":
         move_left = keys[pygame.K_LEFT] or keys[pygame.K_a]
@@ -272,6 +290,7 @@ def main():
     falling_objects = []
     bin_bonus_timer = 0    
     score = 0
+    new_high_score = False
     combo_multiplier = 1
 
     min_spawn_delay = 800
@@ -292,7 +311,10 @@ def main():
     bins = [red_bin, orange_bin,yellow_bin, green_bin, blue_bin, purple_bin]
 
     clock = pygame.time.Clock()
-    font = pygame.font.Font(None, 36)
+    # font = pygame.font.Font(None, 36)
+    font_path = "assets/Bungee-Regular.ttf" # For game over display
+    font = pygame.font.Font("assets/RobotoCondensed-Bold.ttf", 26)  # For HUD
+    game_over_bg = None # For displaying game as background when game_over
 
     # Setup for the "recipe book" UI display (displayed by render_ui function later)
     plus_sign = font.render("+", True, (255,255,255))
@@ -341,6 +363,12 @@ def main():
             if time_left <= 0:
                 game_state = "game_over"
                 time_left = 0
+                game_over_bg = window.copy()  # Capture the last frame as a static image for game over display
+                if score > high_score:
+                    new_high_score = True
+                    high_score = score
+                    with open("highscore.txt", "w") as f:
+                        f.write(str(high_score))
 
             # Update player position
             player.move(move_left, move_right)
@@ -406,18 +434,15 @@ def main():
             render_game(window, background_image, pipe_images, indicator_images, player, falling_objects, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font)
 
         elif game_state == "game_over":
-            new_high_score = False
-            if score > high_score:
-                new_high_score = True
-                high_score = score
-                with open("highscore.txt", "w") as f:
-                    f.write(str(high_score))
-            render_game_over(window, font, new_high_score)
+            if game_over_bg:
+                window.blit(game_over_bg, (0, 0))  # Draw the static last game frame
+            render_game_over(window, font_path, score, high_score, new_high_score)
 
             # Handle restart
             if restart:
                 falling_objects = []
                 score = 0
+                new_high_score = False
                 player.rect.topleft = player_start_pos
                 player.update_held_color(None)
                 combo_multiplier = 1
