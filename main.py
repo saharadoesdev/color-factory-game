@@ -14,7 +14,7 @@ from settings import (
 def initialize_game():
     pygame.init()
     pygame.mixer.init()
-    pygame.mixer.music.set_volume(0.7)
+    pygame.mixer.music.set_volume(0.6)
     window_size = (800, 600)
     window = pygame.display.set_mode(window_size)
     pygame.display.set_caption(GAME_TITLE)
@@ -25,6 +25,8 @@ def load_assets():
     background_image = pygame.transform.scale(background_image, (800, 489))
 
     start_menu_image = pygame.image.load('assets/start_screen.png')
+
+    instructions_image = pygame.image.load('assets/how_to_play.png')
 
     # Load player animations
     player_idle_frames = []
@@ -88,9 +90,9 @@ def load_assets():
         'correct_deposit': pygame.mixer.Sound("assets/audio/correct_deposit.wav"),   #coin01.aif (converted to wav)
         'wrong_deposit': pygame.mixer.Sound("assets/audio/wrong_deposit.wav")   #Downer01.aif (converted to wav)
     }
-    sounds['hazard_hit'].set_volume(0.4)
+    sounds['hazard_hit'].set_volume(0.3)
 
-    return background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, pipe_images, sounds
+    return background_image, start_menu_image, instructions_image, player_images, blob_images, indicator_images, bin_images, wrench_image, pipe_images, sounds
 
 def spawn_object(falling_objects, blob_images, hazard_image, hazard_chance, malfunction_chance, base_fall_speed):
     # x_position = random.randint(0, screen_width - 50)
@@ -231,6 +233,10 @@ def render_start_menu(window, start_menu_image):
     window.blit(start_menu_image, (0, 0))
     pygame.display.flip()
 
+def render_instructions(window, instructions_image):
+    window.blit(instructions_image, (0, 0))
+    pygame.display.flip()
+
 def handle_events(game_state, bins):
     """
     Handles game events, including quitting and restarting.
@@ -249,6 +255,10 @@ def handle_events(game_state, bins):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return False, start_game, restart, move_left, move_right, down_key_pressed
+
+        # Only trigger start_game on KEYDOWN for instructions
+        if game_state == "instructions" and (event.type == pygame.KEYDOWN):
+            start_game = True
         
         # if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Check for left mouse click
         #     for bin in bins:
@@ -274,7 +284,7 @@ def main():
     global game_state
 
     window = initialize_game()
-    background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, pipe_images, sounds = load_assets()
+    background_image, start_menu_image, instructions_image, player_images, blob_images, indicator_images, bin_images, wrench_image, pipe_images, sounds = load_assets()
 
     # Read high score
     try:
@@ -336,11 +346,16 @@ def main():
         if game_state == "start_menu":
             render_start_menu(window, start_menu_image)
             if start_game:
+                game_state = "instructions"
+        elif game_state == "instructions":
+            render_instructions(window, instructions_image)
+            if start_game:
                 pygame.mixer.music.load("assets/audio/background_music.wav")
                 pygame.mixer.music.play(loops=-1)  
                 start_time = pygame.time.get_ticks()
                 bin_bonus_timer = start_time + 4000    # First bonus will appear 4 seconds in
                 game_state = "playing"
+                pygame.event.clear()
         elif game_state == "playing":
             # Check timer
             elapsed_time = pygame.time.get_ticks() - start_time
