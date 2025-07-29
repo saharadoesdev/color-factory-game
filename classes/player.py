@@ -6,10 +6,9 @@ MIX_RULES = {
     "YELLOW": {"RED": "ORANGE", "BLUE": "GREEN"}
 }
 
-class Player():
+class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, images):
-        self.x = x
-        self.y = y
+        super().__init__()
         self.speed = 8
         self.images = images
         self.held_color = None
@@ -23,6 +22,8 @@ class Player():
         self.last_update_time = pygame.time.get_ticks()
         self.animation_speed = 50   # ms per frame
 
+        self.rect = self.image.get_rect(topleft=(x, y))   # For collision checking
+
     def move(self, move_left, move_right):
         """Handles left and right movement."""
         if self.is_stunned:
@@ -33,13 +34,13 @@ class Player():
         
         new_action = 'idle'
         if move_left and not move_right:    # If both left and right pressed together, stay idle
-            self.x -= self.speed
+            self.rect.x -= self.speed
             new_action = 'left'
         elif not move_left and move_right:
-            self.x += self.speed
+            self.rect.x += self.speed
             new_action = 'right'
 
-        self.x = max(5, min(738, self.x))   # Prevent player from moving beyond screen edges
+        self.rect.x = max(5, min(738, self.rect.x))   # Prevent player from moving beyond screen edges
 
         if self.action != new_action:
             self.action = new_action

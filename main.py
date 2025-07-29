@@ -105,23 +105,23 @@ def move_blobs(falling_blobs, window_height):
     """
     for blob in falling_blobs:
         blob.move()
-    falling_blobs[:] = [blob for blob in falling_blobs if blob.y <= window_height]  # Remove off-screen blobs
+    falling_blobs[:] = [blob for blob in falling_blobs if blob.rect.y <= window_height]  # Remove off-screen blobs
 
-def check_collision(player_position, blob_position):
-    basket_x, basket_y = player_position
-    blob_x, blob_y = blob_position
+# def check_collision(player_position, blob_position):
+#     basket_x, basket_y = player_position
+#     blob_x, blob_y = blob_position
 
-    basket_width = 100
-    basket_height = 100
-    blob_width = 50
-    blob_height = 50
+#     basket_width = 100
+#     basket_height = 100
+#     blob_width = 50
+#     blob_height = 50
 
-    if (blob_x < basket_x + basket_width and
-        blob_x + blob_width > basket_x and
-        blob_y < basket_y + basket_height and
-        blob_y + blob_height > basket_y):
-        return True
-    return False
+#     if (blob_x < basket_x + basket_width and
+#         blob_x + blob_width > basket_x and
+#         blob_y < basket_y + basket_height and
+#         blob_y + blob_height > basket_y):
+#         return True
+#     return False
 
 def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font):
     ui_bar = pygame.Surface((800, 50), pygame.SRCALPHA) 
@@ -167,20 +167,20 @@ def render_game(window, background_image, indicator_images, player, falling_blob
     window.fill((0, 43, 34))    # Fill lower area with darkest blue-green from background
     window.blit(background_image, (0, 0))
 
-    window.blit(player.image, (player.x, player.y))
+    window.blit(player.image, player.rect)
 
     # Display indicator above robot for currently held color
     if player.held_color is not None:
-        indicator_pos = (player.x + (player.image.get_width() // 2) - 10, player.y - 10) # Calculate indicator image's position
+        indicator_pos = (player.rect.x + (player.image.get_width() // 2) - 10, player.rect.y - 10) # Calculate indicator image's position
         window.blit(indicator_images[player.held_color], indicator_pos)
 
     for blob in falling_blobs:
-        window.blit(blob.image, (blob.x, blob.y))
+        window.blit(blob.image, blob.rect)
 
     for bin in bins:
-        window.blit(bin.image, (bin.x, bin.y))
+        window.blit(bin.image, bin.rect)
         # Render an indicator image label on top of each bin
-        bin_label_pos = (bin.x + (bin.image.get_width() // 2) - 8, bin.y + (bin.image.get_height() // 2) - 10)  # Center position
+        bin_label_pos = (bin.rect.x + (bin.image.get_width() // 2) - 8, bin.rect.y + (bin.image.get_height() // 2) - 10)  # Center position
         window.blit(indicator_images[bin.color], bin_label_pos)
 
     render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font)
@@ -338,7 +338,7 @@ def main():
 
             # Check for collisions
             for blob in falling_blobs[:]:
-                if check_collision([player.x,player.y], [blob.x, blob.y]):
+                if player.rect.colliderect(blob.rect): # check_collision([player.x,player.y], [blob.x, blob.y]):
                     falling_blobs.remove(blob)
                     if isinstance(blob, Blob):  # If it's a blob, catch it
                         sounds['catch_blob'].play()
