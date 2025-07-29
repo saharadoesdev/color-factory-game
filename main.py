@@ -66,9 +66,15 @@ def load_assets():
     # Load bin images and add to dictionary
     bin_images = {}
     for color in COLORS.keys():
+        bin_images[color] = {}    # Each color is a dictionary, holds normal and glow images
+
         file_path = f"assets/bins/{color.lower()}_barrel.png"
         original_image = pygame.image.load(file_path)
-        bin_images[color] = pygame.transform.smoothscale(original_image, (69, 100))
+        bin_images[color]['normal'] = pygame.transform.smoothscale(original_image, (69, 100))
+
+        file_path = f"assets/bins/{color.lower()}_barrel_glow.png"
+        original_image = pygame.image.load(file_path)
+        bin_images[color]['glow'] = pygame.transform.smoothscale(original_image, (69, 100))
 
     # Hazard image
     wrench_image = pygame.image.load('assets/wrench.png')
@@ -303,6 +309,9 @@ def main():
             for bin in bins:
                 if player.rect.colliderect(bin.activation_zone):
                     active_bin = bin
+                    bin.activate()
+                else:
+                    bin.deactivate()
 
             if down_key_pressed and active_bin is not None:
                 if player.held_color is not None:
