@@ -2,7 +2,6 @@ import pygame
 
 class Hazard():
     def __init__(self, x, y, image):
-        # super().__init__()
         self.x = x
         self.y = y
         self.speed = 4

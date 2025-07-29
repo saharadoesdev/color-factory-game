@@ -5,8 +5,6 @@ from classes.blob import Blob
 from classes.bin import Bin
 from classes.hazard import Hazard
 
-# MAX_MISSED_BLOBS = 3
-# missed_blobs = 0
 game_state = "start_menu"  # The initial game state
 
 COLORS = {
@@ -33,7 +31,6 @@ def initialize_game():
 def load_assets():
     background_image = pygame.image.load('assets/background.jpg')
     background_image = pygame.transform.scale(background_image, (800, 489))
-    # background_image = None     # temporary
 
     start_menu_image = pygame.image.load('assets/start_screen.png')
 
@@ -56,7 +53,7 @@ def load_assets():
         original_image = pygame.image.load(file_path)
         bin_images[color] = pygame.transform.smoothscale(original_image, (69, 100))
 
-    # Hazard image (will probably add more later)
+    # Hazard image
     wrench_image = pygame.image.load('assets/wrench.png')
     wrench_image = pygame.transform.smoothscale(wrench_image, (50, 50))
 
@@ -70,7 +67,6 @@ def load_assets():
     }
     sounds['hazard_hit'].set_volume(0.4)
 
-    # return background_image, player_image, [red_image, yellow_image, blue_image]
     return background_image, start_menu_image, player_image, blob_images, indicator_images, bin_images, wrench_image, sounds
 
 def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
@@ -80,32 +76,19 @@ def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
         falling_blobs.append(Hazard(x_position, y_position, hazard_image))
     else:   # Spawn blob
         color_to_spawn = random.choice(SPAWNABLE_COLORS)    # Choose blob color randomly
-        # blob_image = random.choice(blob_images)
-        # falling_blobs.append([x_position, y_position, blob_image])
         falling_blobs.append(Blob(x_position, y_position, blob_images[color_to_spawn], color_to_spawn)) # Create and spawn new blob
 
 def move_blobs(falling_blobs, window_height):
     """
-    Moves blobs downward and counts missed blobs.
+    Moves blobs downward and removes missed blobs.
 
     Parameters:
     - falling_blobs: List of blobs currently falling.
-    - blob_speed: The speed of the falling blobs.
     - window_height: The height of the game window.
-
-    Returns:
-    - missed_blobs: The number of blobs that fell off the screen.
     """
-    # missed_blobs = 0      # Don't need this anymore, not tracking missed blobs
     for blob in falling_blobs:
-        # blob[1] += blob_speed  # Move the blob down
-        # if blob[1] > window_height:  # Check if the blob is off-screen
-        #     missed_blobs += 1  # Increment the missed blob counter
         blob.move()
-        # if blob.y > window_height:  # Check if the blob is off-screen
-        #      missed_blobs += 1  # Increment the missed blob counter
     falling_blobs[:] = [blob for blob in falling_blobs if blob.y <= window_height]  # Remove off-screen blobs
-    # return missed_blobs
 
 def check_collision(player_position, blob_position):
     basket_x, basket_y = player_position
@@ -129,31 +112,16 @@ def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus
     ui_bar.fill((0, 0, 0, 150)) # Transparent black
     window.blit(ui_bar, (0, 0))
 
-# def render_score(window, score, font):
-    # score_text = font.render(f"Score: {score}", True, (0, 0, 0))
-    # window.blit(score_text, (10, 10))
-
     score_text = font.render(f"Score: {score}", True, (255,255,255))
     window.blit(score_text, (15, 15))
-
-
-# def render_timer(window, time_left, font):
-    # timer_text = font.render(f"Timer: {time_left}s", True, (0, 0, 0))
-    # window.blit(timer_text, (650, 10))
-
-    timer_text = font.render(f"Time: {time_left}", True, (255,255,255))
-    window.blit(timer_text, (685, 15))
-
-# def render_combo(window, combo_multiplier, font):
-    # combo_text = font.render(f"Combo: {combo_multiplier}x", True, (0, 0, 0))
-    # window.blit(combo_text, (325, 10))
 
     combo_text = font.render(f"Combo: {combo_multiplier}x", True, (255,255,255))
     window.blit(combo_text, (540, 15))
 
+    timer_text = font.render(f"Time: {time_left}", True, (255,255,255))
+    window.blit(timer_text, (685, 15))
+
     # Display possible color combinations (like a recipe book):
-    # plus_sign = font.render("+", True, (255,255,255))
-    # equals_sign = font.render("=", True, (255,255,255))
     start_x = 175 
     start_y = 16
     # Orange
@@ -164,7 +132,6 @@ def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus
     window.blit(indicator_images["ORANGE"], (start_x + 84, start_y))
 
     start_x += 120
-    # start_y += 30
     # Green
     window.blit(indicator_images["YELLOW"], (start_x, start_y))
     window.blit(plus_sign, (start_x + 23, start_y - 4))
@@ -173,7 +140,6 @@ def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus
     window.blit(indicator_images["GREEN"], (start_x + 84, start_y))
     
     start_x += 120
-    # start_y += 30
     # Purple
     window.blit(indicator_images["BLUE"], (start_x, start_y))
     window.blit(plus_sign, (start_x + 23, start_y - 3))
@@ -182,31 +148,17 @@ def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus
     window.blit(indicator_images["PURPLE"], (start_x + 84, start_y))
 
 def render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font):
-    # window.blit(background_image, (0, 0))
-     # If there's no background image, fill with a solid color (added this)
-    if background_image is None:
-        window.fill((135, 206, 235))  # RGB for sky blue
-    else:
-        window.fill((0, 43, 34))    # Fill lower area with darkest blue-green from background
-        window.blit(background_image, (0, 0))
+    window.fill((0, 43, 34))    # Fill lower area with darkest blue-green from background
+    window.blit(background_image, (0, 0))
 
     window.blit(player.image, (player.x, player.y))
 
-    # # Display indicator dot for currently held color
-    # if player.held_color is not None:
-    #     indicator_pos = (player.x + player.image.get_width() // 2, player.y) # calculate indicator dot's position
-    # # Look up the RGB tuple from the COLORS dictionary
-    #     color_to_draw = COLORS[player.held_color]
-    # # Use the retrieved tuple to draw the circle
-    #     pygame.draw.circle(window, color_to_draw, indicator_pos, 10)
-
     # Display indicator above robot for currently held color
     if player.held_color is not None:
-        indicator_pos = (player.x + (player.image.get_width() // 2) - 10, player.y - 10) # calculate indicator dot's position
+        indicator_pos = (player.x + (player.image.get_width() // 2) - 10, player.y - 10) # Calculate indicator image's position
         window.blit(indicator_images[player.held_color], indicator_pos)
 
     for blob in falling_blobs:
-        # window.blit(blob[2], (blob[0], blob[1]))
         window.blit(blob.image, (blob.x, blob.y))
 
     for bin in bins:
@@ -216,9 +168,6 @@ def render_game(window, background_image, indicator_images, player, falling_blob
         window.blit(indicator_images[bin.color], bin_label_pos)
 
     render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font)
-    # render_score(window, score, font)
-    # render_timer(window, time_left, font)
-    # render_combo(window, combo_multiplier, font)
     pygame.display.flip()
 
 def render_game_over(window, font, new_high_score):
@@ -283,42 +232,38 @@ def handle_events(game_state, bins):
     return True, start_game, restart, move_left, move_right, clicked_bin_color
 
 def main():
-    global game_state, missed_blobs    # added these
+    global game_state
 
     window = initialize_game()
     background_image, start_menu_image, player_image, blob_images, indicator_images, bin_images, wrench_image, sounds = load_assets()
 
-    # player_position = [350, 500]
-    # player_speed = 5
-    player = Player(400 - (player_image.get_width() // 2), 388, player_image)   # NOW PLAYER is 57 x 100, but this is dynamic to center the player! // player is 100x100, position marks top left, so subtract 50 from desired center
+    player = Player(400 - (player_image.get_width() // 2), 388, player_image)   # Center the player
     screen_width = 800
     screen_height = 600
     falling_blobs = []
-    # blob_speed = 5
     spawn_timer = 0
     score = 0
     high_score = 0
     combo_multiplier = 1
 
     # Create bins - each 69 wide, so space them out accordingly
-    red_bin = Bin(55, 500, bin_images["RED"], "RED")    # width is from 50 - 150
+    red_bin = Bin(55, 500, bin_images["RED"], "RED")
     orange_bin = Bin(179, 500, bin_images["ORANGE"], "ORANGE")
-    yellow_bin = Bin(303, 500, bin_images["YELLOW"], "YELLOW")  # 350 - 450
+    yellow_bin = Bin(303, 500, bin_images["YELLOW"], "YELLOW")
     green_bin = Bin(427, 500, bin_images["GREEN"], "GREEN")
-    blue_bin = Bin(551, 500, bin_images["BLUE"], "BLUE")   # 650 - 750
-    purple_bin = Bin(675, 500, bin_images["PURPLE"], "PURPLE")   # 650 - 750
+    blue_bin = Bin(551, 500, bin_images["BLUE"], "BLUE")
+    purple_bin = Bin(675, 500, bin_images["PURPLE"], "PURPLE")
     bins = [red_bin, orange_bin,yellow_bin, green_bin, blue_bin, purple_bin]
 
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
 
-    # Set up "recipe book" UI display (displayed by render_ui function later)
+    # Setup for the "recipe book" UI display (displayed by render_ui function later)
     plus_sign = font.render("+", True, (255,255,255))
     equals_sign = font.render("=", True, (255,255,255))
     
-    # Set up timer
-    # start_time = pygame.time.get_ticks()
-    game_duration = 30000   # 30 seconds, make longer later
+    # Set up timer and clock ticks
+    game_duration = 60000   # 60 seconds
     last_tick_second = -1
 
     # Start music on infinite loop
@@ -340,7 +285,6 @@ def main():
             # Check timer
             elapsed_time = pygame.time.get_ticks() - start_time
             time_left = (game_duration - elapsed_time) // 1000
-            # print(time_left)
 
             # Check if last 10 seconds and play sound (if one hasn't already played for this second)
             if time_left <= 10 and time_left != last_tick_second:
@@ -351,23 +295,16 @@ def main():
                 game_state = "game_over"
                 time_left = 0
 
-          # Update player position
-        #   player_position = update_player_position(player_position, move_left, move_right, player_speed, screen_width)
-
-        #   player_position[0] += (move_right - move_left) * player.speed
-        #   player_position[0] = max(0, min(700, player_position[0]))
+            # Update player position
             player.move(move_left, move_right)
 
             if clicked_bin_color is not None:
-                # if player.held_color is None:     # Nothing needs to happen (for now?)
-                #     print("No color held!")
-                if player.held_color == clicked_bin_color:   # or player.held_color in MIX_RULES[clicked_bin_color].values():
-                    # Drop color in matching bin // OLD: or parent primary color bin (ex., purple can go in red or blue)
-                    # print("Correct!")
+                if player.held_color == clicked_bin_color:
+                    # Drop color in correct (matching) bin
                     sounds['correct_deposit'].play()
                     if clicked_bin_color in SPAWNABLE_COLORS:   # Primary colors aren't worth as many points
                         score += 100 * combo_multiplier
-                    else:
+                    else:       # Secondary (mixed) colors are worth more points
                         score += 500 * combo_multiplier
                     combo_multiplier = 5 if combo_multiplier == 5 else combo_multiplier + 1  # Max combo multiplier is 5x
                 elif player.held_color is not None:   # If color dropped in wrong bin, reset combo
@@ -375,18 +312,11 @@ def main():
                     combo_multiplier = 1
                 player.update_held_color(None)
 
-
             # Spawn blobs periodically
             spawn_timer += 1
             if spawn_timer > 50:    # Originally 30
               spawn_blob(falling_blobs, blob_images, wrench_image, screen_width)
               spawn_timer = 0
-
-            # Move blobs and check for game-over condition
-            # missed_blobs += move_blobs(falling_blobs, blob_speed, screen_height)
-            # missed_blobs += move_blobs(falling_blobs, screen_height)
-            # if missed_blobs >= MAX_MISSED_BLOBS:
-            #     game_state = "game_over"
 
             move_blobs(falling_blobs, screen_height)
 
@@ -394,14 +324,13 @@ def main():
             for blob in falling_blobs[:]:
                 if check_collision([player.x,player.y], [blob.x, blob.y]):
                     falling_blobs.remove(blob)
-                    if isinstance(blob, Blob):  # This will be more refined later probably haha
+                    if isinstance(blob, Blob):  # If it's a blob, catch it
                         sounds['catch_blob'].play()
                         player.update_held_color(blob.color)
                     else:   # Hazard, so stun
                         sounds['hazard_hit'].play()
                         player.get_stunned()
                         combo_multiplier = 1    # Reset combo
-                    # score += 1
 
             # Render the game
             render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font)
@@ -416,7 +345,6 @@ def main():
             # Handle restart
             if restart:
                 falling_blobs = []
-                # missed_blobs = 0
                 score = 0
                 player.update_held_color(None)
                 combo_multiplier = 1

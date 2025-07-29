@@ -8,33 +8,16 @@ MIX_RULES = {
 
 class Player():
     def __init__(self, x, y, image):
-        # super().__init__()
         self.x = x
         self.y = y
         self.speed = 8
-        # player_image = pygame.image.load('assets/player_basket.png')    # Load original image
-        # self.image = pygame.transform.scale(player_image, (100, 100))   # Scale image
         self.image = image
         self.held_color = None
         self.is_stunned = False
         self.stun_end_time = 0
-        # self.rect = self.image.get_rect(topleft=(x, y))   # I think i can use this?? is it just when it's a sprite?
-        # self.vel_y = 0  # Vertical velocity for jumping
-        # self.on_ground = False  # Track if player is on a surface
 
-    def move(self, move_left, move_right):  # or just keys
-        """Handles left, right movement and jumping."""
-        # if keys[pygame.K_LEFT]:
-        #     # self.rect.x -= PLAYER_SETTINGS["speed"]
-        #     self.rect.x -= self.speed
-        # if keys[pygame.K_RIGHT]:
-        #     # self.rect.x += PLAYER_SETTINGS["speed"]
-        #     self.rect.x += self.speed
-
-        # if move_left:
-        #     self.rect.x -= self.speed
-        # if move_right:
-        #     self.rect.x += self.speed
+    def move(self, move_left, move_right):
+        """Handles left and right movement."""
 
         if self.is_stunned:
             if pygame.time.get_ticks() > self.stun_end_time:    # Check if stun time is over
@@ -44,39 +27,15 @@ class Player():
             
         # Move if left or right key pressed
         self.x += (move_right - move_left) * self.speed
-        self.x = max(0, min(700, self.x))
-
-        # Prevent player from moving beyond the left boundary - i think i can use this??
-        # if self.rect.left < 0:
-        #     self.rect.left = 0
-
-        # Righthand boundary value - i think i can use this?? (bottom one)
-        # # if self.rect.right > SETTINGS["WIDTH"] + 400:  
-        # #     self.rect.right = SETTINGS["WIDTH"] + 400
-        # if self.rect.right > 800 + 400:  
-        #     self.rect.right = 800 + 400
+        self.x = max(5, min(738, self.x))   # Prevent player from moving beyond screen edges
 
     def update_held_color(self, new_color):
-        # if held_color == "red" and color == "blue":   # For later use when mixing colors
-        #     self.held_color = "purple"    # Actually I'll use a dictionary instead !!
-        # else: # held_color == None
-        #     self.held_color = color
-
-        # self.held_color = color
-        # print(self.held_color)    # for testing
-
         if new_color == None:   # Clear held color
             self.held_color = None
         elif self.held_color == None:
             self.held_color = new_color
-            # print("empty hand before, now " + self.held_color)
-        elif self.held_color in MIX_RULES and new_color in MIX_RULES[self.held_color]:  # Mix colors based on MIX_RULES !
+        elif self.held_color in MIX_RULES and new_color in MIX_RULES[self.held_color]:  # Mix colors based on MIX_RULES
             self.held_color = MIX_RULES[self.held_color][new_color]
-            # print("caught " + new_color + "and mixed to " + self.held_color)
-        # elif self.held_color is not new_color:    # I'll hopefully figure something out for this later!
-        #     # Handle impossible mixes - turn brown maybe?
-        #     print("No mix possible!")
-
         # If player catches the color they're already holding, or an impossible mix, nothing happens
 
     def get_stunned(self, duration=1200):   # 1.2 seconds
