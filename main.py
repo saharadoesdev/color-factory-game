@@ -138,45 +138,61 @@ def check_collision(player_position, blob_position):
 
 def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font):
 
+    ui_bar = pygame.Surface((800, 50), pygame.SRCALPHA) 
+    ui_bar.fill((0, 0, 0, 150)) # Transparent black
+    window.blit(ui_bar, (0, 0))
+
 # def render_score(window, score, font):
-    score_text = font.render(f"Score: {score}", True, (0, 0, 0))
-    window.blit(score_text, (10, 10))
+    # score_text = font.render(f"Score: {score}", True, (0, 0, 0))
+    # window.blit(score_text, (10, 10))
+
+    score_text = font.render(f"Score: {score}", True, (255,255,255))
+    window.blit(score_text, (15, 15))
+
 
 # def render_timer(window, time_left, font):
-    timer_text = font.render(f"Timer: {time_left}s", True, (0, 0, 0))
-    window.blit(timer_text, (650, 10))
+    # timer_text = font.render(f"Timer: {time_left}s", True, (0, 0, 0))
+    # window.blit(timer_text, (650, 10))
+
+    timer_text = font.render(f"Time: {time_left}", True, (255,255,255))
+    window.blit(timer_text, (685, 15))
 
 # def render_combo(window, combo_multiplier, font):
-    combo_text = font.render(f"Combo: {combo_multiplier}x", True, (0, 0, 0))
-    window.blit(combo_text, (325, 10))
+    # combo_text = font.render(f"Combo: {combo_multiplier}x", True, (0, 0, 0))
+    # window.blit(combo_text, (325, 10))
+
+    combo_text = font.render(f"Combo: {combo_multiplier}x", True, (255,255,255))
+    window.blit(combo_text, (540, 15))
 
     # Display possible color combinations (like a recipe book):
     # plus_sign = font.render("+", True, (255,255,255))
     # equals_sign = font.render("=", True, (255,255,255))
-    start_x = 10
-    start_y = 10
+    start_x = 175 
+    start_y = 16
     # Orange
     window.blit(indicator_images["RED"], (start_x, start_y))
-    window.blit(plus_sign, (start_x + 25, start_y - 3))
-    window.blit(indicator_images["YELLOW"], (start_x + 45, start_y))
-    window.blit(equals_sign, (start_x + 70, start_y - 3))
-    window.blit(indicator_images["ORANGE"], (start_x + 90, start_y))
+    window.blit(plus_sign, (start_x + 23, start_y - 4))
+    window.blit(indicator_images["YELLOW"], (start_x + 41, start_y))
+    window.blit(equals_sign, (start_x + 64, start_y - 4))
+    window.blit(indicator_images["ORANGE"], (start_x + 84, start_y))
 
-    start_y += 30
+    start_x += 120
+    # start_y += 30
     # Green
     window.blit(indicator_images["YELLOW"], (start_x, start_y))
-    window.blit(plus_sign, (start_x + 25, start_y - 3))
-    window.blit(indicator_images["BLUE"], (start_x + 45, start_y))
-    window.blit(equals_sign, (start_x + 70, start_y - 3))
-    window.blit(indicator_images["GREEN"], (start_x + 90, start_y))
-
-    start_y += 30
+    window.blit(plus_sign, (start_x + 23, start_y - 4))
+    window.blit(indicator_images["BLUE"], (start_x + 41, start_y))
+    window.blit(equals_sign, (start_x + 64, start_y - 4))
+    window.blit(indicator_images["GREEN"], (start_x + 84, start_y))
+    
+    start_x += 120
+    # start_y += 30
     # Purple
     window.blit(indicator_images["BLUE"], (start_x, start_y))
-    window.blit(plus_sign, (start_x + 25, start_y - 3))
-    window.blit(indicator_images["RED"], (start_x + 45, start_y))
-    window.blit(equals_sign, (start_x + 70, start_y - 3))
-    window.blit(indicator_images["PURPLE"], (start_x + 90, start_y))
+    window.blit(plus_sign, (start_x + 23, start_y - 3))
+    window.blit(indicator_images["RED"], (start_x + 41, start_y))
+    window.blit(equals_sign, (start_x + 64, start_y - 3))
+    window.blit(indicator_images["PURPLE"], (start_x + 84, start_y))
 
 def render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font):
     # window.blit(background_image, (0, 0))
