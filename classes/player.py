@@ -12,30 +12,46 @@ class Player():
         self.y = y
         self.speed = 8
         self.images = images
-        self.image = images['idle']
         self.held_color = None
         self.is_stunned = False
         self.stun_end_time = 0
 
+        # Setup for animations
+        self.action = 'idle'
+        self.current_frame = 0
+        self.image = images[self.action][self.current_frame]
+        self.last_update_time = pygame.time.get_ticks()
+        self.animation_speed = 50   # ms per frame
+
     def move(self, move_left, move_right):
         """Handles left and right movement."""
-
         if self.is_stunned:
             if pygame.time.get_ticks() > self.stun_end_time:    # Check if stun time is over
                 self.is_stunned = False
             else:   # Stunned, so can't move
                 return
-            
-        # Move if left or right key pressed
-        self.x += (move_right - move_left) * self.speed
+        
+        new_action = 'idle'
+        if move_left and not move_right:    # If both left and right pressed together, stay idle
+            self.x -= self.speed
+            new_action = 'left'
+        elif not move_left and move_right:
+            self.x += self.speed
+            new_action = 'right'
+
         self.x = max(5, min(738, self.x))   # Prevent player from moving beyond screen edges
 
-        if move_left:
-            self.image = self.images['left']
-        elif move_right:
-            self.image = self.images['right']
-        else:
-            self.image = self.images['idle']
+        if self.action != new_action:
+            self.action = new_action
+
+        self.animate()
+
+    def animate(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_update_time > self.animation_speed:
+            self.last_update_time = current_time
+            self.current_frame = (self.current_frame + 1) % 6   # Each animation is 6 frames
+            self.image = self.images[self.action][self.current_frame]
 
     def update_held_color(self, new_color):
         if new_color == None:   # Clear held color

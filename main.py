@@ -33,13 +33,26 @@ def load_assets():
 
     start_menu_image = pygame.image.load('assets/start_screen.png')
 
-    player_image = pygame.image.load('assets/robot_idle_5.png')
-    player_image = pygame.transform.smoothscale(player_image, (57, 100))
+    # Load player animations
+    player_idle_frames = []
+    for i in range(6):
+        frame = pygame.image.load(f'assets/player/robot_idle_{i}.png') #.convert_alpha()
+        frame = pygame.transform.smoothscale(frame, (57, 100))
+        player_idle_frames.append(frame)
 
-    player_left = pygame.image.load('assets/robot_left_2.png')
-    player_left = pygame.transform.smoothscale(player_left, (57, 99))
+    player_left_frames = []
+    for i in range(6):
+        frame = pygame.image.load(f'assets/player/robot_left_{i}.png') #.convert_alpha()
+        frame = pygame.transform.smoothscale(frame, (57, 99))
+        player_left_frames.append(frame)
 
-    player_images = {'idle': player_image, 'left': player_left, 'right': pygame.transform.flip(player_left, True, False)}
+    # Right frames are just flipped versions of left
+    player_right_frames = []
+    for frame in player_left_frames:
+        flipped_frame = pygame.transform.flip(frame, True, False)
+        player_right_frames.append(flipped_frame)
+
+    player_images = {'idle': player_idle_frames, 'left': player_left_frames, 'right': player_right_frames}
 
     # Load blob images, which are also used for robot's color indicator, and add to dictionaries
     blob_images = {}
@@ -240,7 +253,7 @@ def main():
     window = initialize_game()
     background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, sounds = load_assets()
 
-    player = Player(400 - (player_images['idle'].get_width() // 2), 388, player_images)   # Center the player
+    player = Player(400 - (player_images['idle'][0].get_width() // 2), 388, player_images)   # Center the player
     screen_width = 800
     screen_height = 600
     falling_blobs = []
