@@ -223,9 +223,9 @@ def handle_events(game_state, bins):
     if game_state == "start_menu" and any(keys):
         start_game = True
     if game_state == "playing":
-        move_left = keys[pygame.K_LEFT]
-        move_right = keys[pygame.K_RIGHT]
-        down_key_pressed = keys[pygame.K_DOWN]
+        move_left = keys[pygame.K_LEFT] or keys[pygame.K_a]
+        move_right = keys[pygame.K_RIGHT] or keys[pygame.K_d]
+        down_key_pressed = keys[pygame.K_DOWN] or keys[pygame.K_s]
     elif game_state == "game_over" and keys[pygame.K_r]:
         restart = True
 
