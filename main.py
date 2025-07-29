@@ -1,6 +1,5 @@
 import pygame
 import random
-import math
 from classes.player import Player
 from classes.blob import Blob
 from classes.bin import Bin
@@ -81,6 +80,13 @@ def load_assets():
     wrench_image = pygame.image.load('assets/wrench.png')
     wrench_image = pygame.transform.smoothscale(wrench_image, (50, 50))
 
+    # Load pipes
+    pipe_images = [pygame.image.load('assets/red_pipe.png'),
+                   pygame.image.load('assets/yellow_pipe.png'),
+                   pygame.image.load('assets/blue_pipe.png')]
+    pipe_images = [pygame.transform.rotate(image, 90) for image in pipe_images]
+    pipe_images = [pygame.transform.smoothscale(image, (125, 209)) for image in pipe_images]
+
     # Load sound effects into a dictionary
     sounds = {
         'hazard_hit': pygame.mixer.Sound("assets/audio/hazard_hit.aif"), # metal10.aif
@@ -91,7 +97,7 @@ def load_assets():
     }
     sounds['hazard_hit'].set_volume(0.4)
 
-    return background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, sounds
+    return background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, pipe_images, sounds
 
 def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
     x_position = random.randint(0, screen_width - 50)
@@ -154,7 +160,7 @@ def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus
     window.blit(equals_sign, (start_x + 64, start_y - 3))
     window.blit(indicator_images["PURPLE"], (start_x + 84, start_y))
 
-def render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font):
+def render_game(window, background_image, pipe_images, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font):
     window.fill((0, 43, 34))    # Fill lower area with darkest blue-green from background
     window.blit(background_image, (0, 0))
 
@@ -167,6 +173,11 @@ def render_game(window, background_image, indicator_images, player, falling_blob
 
     for blob in falling_blobs:
         window.blit(blob.image, blob.rect)
+
+    # Render pipes at top (over blobs, under UI)
+    window.blit(pipe_images[0], (76,-117))      # Red
+    window.blit(pipe_images[1], (336,-117))    # Yellow
+    window.blit(pipe_images[2], (587,-117))    # Blue
 
     for bin in bins:
         if bin.has_bonus:   # Pulsing effect, render both normal and glow
@@ -248,7 +259,7 @@ def main():
     global game_state
 
     window = initialize_game()
-    background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, sounds = load_assets()
+    background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, pipe_images, sounds = load_assets()
 
     player = Player(400 - (player_images['idle'][0].get_width() // 2), 388, player_images)   # Center the player
     screen_width = 800
@@ -268,7 +279,6 @@ def main():
     blue_bin = Bin(551, 500, bin_images["BLUE"], "BLUE")
     purple_bin = Bin(675, 500, bin_images["PURPLE"], "PURPLE")
     bins = [red_bin, orange_bin,yellow_bin, green_bin, blue_bin, purple_bin]
-
 
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
@@ -370,7 +380,7 @@ def main():
                         falling_blobs.remove(blob)   
 
             # Render the game
-            render_game(window, background_image, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font)
+            render_game(window, background_image, pipe_images, indicator_images, player, falling_blobs, bins, score, time_left, combo_multiplier, plus_sign, equals_sign, font)
 
         elif game_state == "game_over":
             new_high_score = False
