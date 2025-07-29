@@ -7,11 +7,12 @@ MIX_RULES = {
 }
 
 class Player():
-    def __init__(self, x, y, image):
+    def __init__(self, x, y, images):
         self.x = x
         self.y = y
         self.speed = 8
-        self.image = image
+        self.images = images
+        self.image = images['idle']
         self.held_color = None
         self.is_stunned = False
         self.stun_end_time = 0
@@ -28,6 +29,13 @@ class Player():
         # Move if left or right key pressed
         self.x += (move_right - move_left) * self.speed
         self.x = max(5, min(738, self.x))   # Prevent player from moving beyond screen edges
+
+        if move_left:
+            self.image = self.images['left']
+        elif move_right:
+            self.image = self.images['right']
+        else:
+            self.image = self.images['idle']
 
     def update_held_color(self, new_color):
         if new_color == None:   # Clear held color

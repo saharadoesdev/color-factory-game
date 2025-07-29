@@ -1,6 +1,6 @@
 import pygame
 import random
-from classes.player import Player, MIX_RULES
+from classes.player import Player
 from classes.blob import Blob
 from classes.bin import Bin
 from classes.hazard import Hazard
@@ -14,7 +14,6 @@ COLORS = {
     "ORANGE": (255, 165, 0),
     "GREEN": (0, 255, 0),
     "PURPLE": (128, 0, 128),
-    # "WHITE": (255, 255, 255)
 }
 
 SPAWNABLE_COLORS = ["RED", "BLUE", "YELLOW"]
@@ -36,6 +35,11 @@ def load_assets():
 
     player_image = pygame.image.load('assets/robot_idle_5.png')
     player_image = pygame.transform.smoothscale(player_image, (57, 100))
+
+    player_left = pygame.image.load('assets/robot_left_2.png')
+    player_left = pygame.transform.smoothscale(player_left, (57, 99))
+
+    player_images = {'idle': player_image, 'left': player_left, 'right': pygame.transform.flip(player_left, True, False)}
 
     # Load blob images, which are also used for robot's color indicator, and add to dictionaries
     blob_images = {}
@@ -67,7 +71,7 @@ def load_assets():
     }
     sounds['hazard_hit'].set_volume(0.4)
 
-    return background_image, start_menu_image, player_image, blob_images, indicator_images, bin_images, wrench_image, sounds
+    return background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, sounds
 
 def spawn_blob(falling_blobs, blob_images, hazard_image, screen_width):
     x_position = random.randint(0, screen_width - 50)
@@ -107,7 +111,6 @@ def check_collision(player_position, blob_position):
     return False
 
 def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font):
-
     ui_bar = pygame.Surface((800, 50), pygame.SRCALPHA) 
     ui_bar.fill((0, 0, 0, 150)) # Transparent black
     window.blit(ui_bar, (0, 0))
@@ -235,9 +238,9 @@ def main():
     global game_state
 
     window = initialize_game()
-    background_image, start_menu_image, player_image, blob_images, indicator_images, bin_images, wrench_image, sounds = load_assets()
+    background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, sounds = load_assets()
 
-    player = Player(400 - (player_image.get_width() // 2), 388, player_image)   # Center the player
+    player = Player(400 - (player_images['idle'].get_width() // 2), 388, player_images)   # Center the player
     screen_width = 800
     screen_height = 600
     falling_blobs = []
