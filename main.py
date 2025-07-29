@@ -29,13 +29,13 @@ def load_assets():
     # Load player animations
     player_idle_frames = []
     for i in range(6):
-        frame = pygame.image.load(f'assets/player/robot_idle_{i}.png') #.convert_alpha()
+        frame = pygame.image.load(f'friendly faces/kiersten-skate-left.png') #.convert_alpha()
         frame = pygame.transform.smoothscale(frame, (57, 100))
         player_idle_frames.append(frame)
 
     player_left_frames = []
     for i in range(6):
-        frame = pygame.image.load(f'assets/player/robot_left_{i}.png') #.convert_alpha()
+        frame = pygame.image.load(f'friendly faces/kiersten-skate-right.png') #.convert_alpha()
         frame = pygame.transform.smoothscale(frame, (57, 99))
         player_left_frames.append(frame)
 
@@ -70,7 +70,7 @@ def load_assets():
         bin_images[color]['glow'] = pygame.transform.smoothscale(original_image, (69, 100))
 
     # Hazard image
-    wrench_image = pygame.image.load('assets/wrench.png')
+    wrench_image = pygame.image.load('friendly faces/kiersten-sad.png')
     wrench_image = pygame.transform.smoothscale(wrench_image, (50, 50))
 
     # Load pipes
@@ -227,8 +227,11 @@ def render_game_over(window, font_path, score, high_score, new_high_score):
 
     pygame.display.flip()
 
-def render_start_menu(window, start_menu_image):
+def render_start_menu(window, start_menu_image, font_path):
     window.blit(start_menu_image, (0, 0))
+    title_font = pygame.font.Font(font_path, 72)
+    kiersten_text = title_font.render("KIERSTEN", True, (255, 255, 255))
+    window.blit(kiersten_text, (10, 10))
     pygame.display.flip()
 
 def handle_events(game_state, bins):
@@ -334,7 +337,7 @@ def main():
         running, start_game, restart, move_left, move_right, down_key_pressed = handle_events(game_state, bins)
 
         if game_state == "start_menu":
-            render_start_menu(window, start_menu_image)
+            render_start_menu(window, start_menu_image, font_path)
             if start_game:
                 pygame.mixer.music.load("assets/audio/background_music.wav")
                 pygame.mixer.music.play(loops=-1)  
