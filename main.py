@@ -103,7 +103,7 @@ def spawn_object(falling_objects, blob_images, hazard_image, hazard_chance, base
         spawn_pos = SPAWN_POSITIONS[color_to_spawn]
         falling_objects.append(Blob(spawn_pos[0], spawn_pos[1], blob_images[color_to_spawn], color_to_spawn, base_fall_speed)) # Create and spawn new blob
 
-def move_blobs(falling_objects, window_height):
+def move_objects(falling_objects):
     """
     Moves objects (blobs, hazards) downward and removes missed objects.
 
@@ -113,7 +113,7 @@ def move_blobs(falling_objects, window_height):
     """
     for object in falling_objects:
         object.move()
-    falling_objects[:] = [object for object in falling_objects if object.rect.y <= window_height]  # Remove off-screen blobs
+    falling_objects[:] = [object for object in falling_objects if object.rect.y <= WINDOW_HEIGHT]  # Remove off-screen blobs
 
 def render_ui(window, score, time_left, combo_multiplier, indicator_images, plus_sign, equals_sign, font):
     ui_bar = pygame.Surface((800, 50), pygame.SRCALPHA) 
@@ -255,13 +255,20 @@ def main():
     window = initialize_game()
     background_image, start_menu_image, player_images, blob_images, indicator_images, bin_images, wrench_image, pipe_images, sounds = load_assets()
 
-    player = Player(400 - (player_images['idle'][0].get_width() // 2), 388, player_images)   # Center the player
-    screen_width = 800
-    screen_height = 600
+    # Read high score
+    try:
+        with open("highscore.txt", "r") as f:
+            high_score = int(f.read())
+    except FileNotFoundError:
+        high_score = 0 # If the file doesn't exist, the high score is 0
+    except ValueError:
+        high_score = 0 # If the file is empty or corrupted
+
+    player_start_pos = (400 - (player_images['idle'][0].get_width() // 2), 388)
+    player = Player(player_start_pos[0], player_start_pos[1], player_images)   # Center the player
     falling_objects = []
     bin_bonus_timer = 0    
     score = 0
-    high_score = 0
     combo_multiplier = 1
 
     min_spawn_delay = 800
@@ -373,7 +380,7 @@ def main():
               random.choice(bins).start_bonus()
               bin_bonus_timer = pygame.time.get_ticks() + random.randint(13000,15000)    # Next bonus in 13-15 seconds (10 second long bonuses)
 
-            move_blobs(falling_objects, screen_height)
+            move_objects(falling_objects)
 
             # Check for collisions
             for object in falling_objects[:]:
@@ -398,12 +405,15 @@ def main():
             if score > high_score:
                 new_high_score = True
                 high_score = score
+                with open("highscore.txt", "w") as f:
+                    f.write(str(high_score))
             render_game_over(window, font, new_high_score)
 
             # Handle restart
             if restart:
                 falling_objects = []
                 score = 0
+                player.rect.topleft = player_start_pos
                 player.update_held_color(None)
                 combo_multiplier = 1
                 start_time = pygame.time.get_ticks()    # Reset timer
