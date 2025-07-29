@@ -3,9 +3,9 @@ import random
 from settings import HAZARD_SPEED, HAZARD_DRIFT
 
 class Hazard(pygame.sprite.Sprite):
-    def __init__(self, x, y, image):
+    def __init__(self, x, y, image, speed):
         super().__init__()
-        self.speed = HAZARD_SPEED
+        self.speed = speed   # HAZARD_SPEED
         self.image = image
         self.rect = self.image.get_rect(topleft=(x, y))   # For collision checking  
         self.pos_x = float(x)

@@ -43,3 +43,27 @@ PRIMARY_SCORE = 100
 SECONDARY_SCORE = 500
 MAX_COMBO = 5
 BONUS_MULTIPLIER = 2
+
+PHASES = [
+    {
+        "time_left": (GAME_DURATION // 1000) // 3 * 2,  # phase starts when time_left > 60
+        "min_spawn_delay": 800,
+        "max_spawn_delay": 1500,
+        "hazard_chance": 0.15,
+        "base_fall_speed": 3.5,
+    },
+    {
+        "time_left": (GAME_DURATION // 1000) // 3,  # phase starts when 30 < time_left <= 60
+        "min_spawn_delay": 500,
+        "max_spawn_delay": 1000,
+        "hazard_chance": 0.20,
+        "base_fall_speed": 4,
+    },
+    {
+        "time_left": 0,  # phase starts when 30 < time_left <= 60
+        "min_spawn_delay": 300,
+        "max_spawn_delay": 700,
+        "hazard_chance": 0.25,
+        "base_fall_speed": 4.5,
+    }
+]
